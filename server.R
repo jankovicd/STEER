@@ -1,0 +1,950 @@
+
+library(rdrop2)
+
+source("manual_inputs.R", local = TRUE)
+source("functions.R", local = TRUE)
+source("elicitation_questions_ui.R", local = TRUE)
+source("about_you.R", local = TRUE)
+
+is_local <- Sys.getenv('SHINY_PORT') == ""
+
+if (is_local) {
+  setwd(app_location)
+}
+
+function (input, output, session) {
+  
+  ##### create reactive values #####
+  
+  # reactive values where experts' responses are stored
+  # ($test used in practice question in "instructions" tab)
+  
+  elici_minis <- reactiveValues(test = 9) # lower limit of expert's plausible range
+  elici_maxis <- reactiveValues(test = 17) # upper limit of expert's plausible range
+  
+  if(elicitation_method == "chips and bins"){
+    
+    chips_width <- reactiveValues(test = 1) # bin width
+    chips_lower <- reactiveValues(test = 8) # lower limit of the plot
+    chips_upper <- reactiveValues(test = 18) # upper limit of the plot
+    chips_nbins <- reactiveValues(test = 10) # total number of bins
+    chips_nchip <- reactiveValues(test = 20) # total number of chips
+    chips_nhigh <- reactiveValues(test = 20) # height of plot
+    chips_lbins <- reactiveValues(test = 8:17) # lower limit of each bin
+    chips_rbins <- reactiveValues(test = 9:18) # upper limit of each bin
+    chips_value <- reactiveValues(test = 9:18) # bins (equal to rbins)
+    chips_chips <- reactiveValues(test = rep(0,10)) # number of chips in each bin
+    
+    show_plot <- reactiveValues(test=0) # indicator (>0) that experts have entered (or updated) their plausible range for chips and bins
+    enter_plot <- reactiveValues(test=0) #indicator (>0) that experts have used all chips
+    
+  } else if (elicitation_method == "quartiles") {
+    
+    elici_q1 <- reactiveValues(test = 8) # expert's lower quartile
+    elici_q2 <- reactiveValues(test = 9) # expert's median
+    elici_q3 <- reactiveValues(test = 11) #expert's upper quartile
+
+    enter_min_max <- reactiveValues(test=0) # indicator (>0) that experts have entered (or updated) their plausible range for quertiles/tertiles
+    enter_quarts <- reactiveValues(test=0) # indicator (>0) that experts have entered (or updated) their quartiles
+    
+  } else if (elicitation_method == "tertiles") {
+    
+    elici_t1 <- reactiveValues(test = 8.5) # expert's lower tertile
+    elici_t2 <- reactiveValues(test = 10.5) # expert's upper tertile
+    
+    enter_min_max <- reactiveValues(test=0) # indicator (>0) that experts have entered (or updated) their plausible range for quertiles/tertiles
+    enter_terts <- reactiveValues(test=0) # indicator (>0) that experts have entered (or updated) their tertiles
+    
+  }
+  
+  buttons <- reactiveValues(expert_id = 0, # expert's unique code provided by the investigator that distinguished their saved answers from others'
+                            next_home = -1, # current page on the home tab
+                            end_home = 0, # indicator (>0) that the expert is on the last page of the home tab
+                            next_que_0 = 0, # indicator (>0) that training is complete, switch to next tab
+                            start_que = 0, # indicator (>0) that the expert has read background information
+                            que_no = 1) # the next question the expert needs to answer
+                            
+  save <- reactiveValues(about_you_all = 0, # object for saving "about you" questions
+                         about_you_colnames = "expert_id") # column names for "about_you" questions
+  
+  for (i in eli_que_names){
+    
+    # create reactive values where experts' responses are stored
+    
+    elici_minis[[i]] <- integer(0)
+    elici_maxis[[i]] <- integer(0)
+    
+    if(elicitation_method == "chips and bins"){
+
+      chips_width[[i]] <- 0
+      chips_lower[[i]] <- 0
+      chips_upper[[i]] <- 0
+      chips_nbins[[i]] <- 0
+      chips_nchip[[i]] <- 0
+      chips_nhigh[[i]] <- 0
+      chips_lbins[[i]] <- 0
+      chips_rbins[[i]] <- 0
+      chips_value[[i]] <- 0
+      chips_chips[[i]] <- 0
+      
+      show_plot[[i]]  <- 0
+      enter_plot[[i]] <- 0
+            
+    } else if (elicitation_method == "quartiles"){
+      
+      elici_q1[[i]] <- integer(0)
+      elici_q2[[i]] <- integer(0)
+      elici_q3[[i]] <- integer(0)
+      
+      enter_min_max[[i]] <- 0
+      enter_quarts[[i]] <-0
+      
+    } else if (elicitation_method == "tertiles"){
+      
+      elici_t1[[i]] <- integer(0)
+      elici_t2[[i]] <- integer(0)
+      
+      enter_min_max[[i]] <- 0
+      enter_terts[[i]] <-0
+      
+    }
+
+    save[[i]] <- 0 # saves elicitation answers
+    save[[paste0(i,"_colnames")]] <- 0 # column names for elicitation answers
+    
+  }
+
+  
+  ##### button clicks #####
+  
+    observeEvent(input$next_home,{
+    
+    # allows the user to move through different pages of the Home screen
+    # (home page, consent form and questions about experts, if relevant)
+    
+    if(buttons$next_home == -1) {
+      
+      if ("expert_id"%in%names(input)) {
+        
+        if(!is.na(input$expert_id)) {
+          
+          buttons$expert_id <- input$expert_id
+          save$about_you_all <- input$expert_id
+          buttons$next_home <- 0
+          
+        } else {
+          
+          showModal(modalDialog (uiOutput ("no_password"), size="l"))
+          
+        }
+        
+        } else {
+        
+        showModal(modalDialog (uiOutput ("no_password"), size="l")) 
+        
+      }
+      
+    } else if (!include_about_you){
+      
+      # if not asking questions about experts, move onto next page on the Home tab
+      
+      temp <- buttons$next_home; buttons$next_home <- temp + 1
+      
+      
+      if(buttons$next_home == last_home_page){
+        
+        # if expert is on the last page of the Home tab, move to "Instructions tab"
+        
+        buttons$end_home <- 1
+        updateTabsetPanel(session, "top_tabs",
+                          selected = "Instructions"
+        )
+        
+      }
+      
+    } else if (buttons$next_home < (last_home_page-1)){
+      
+      temp <- buttons$next_home; buttons$next_home <- temp + 1
+      
+    } else {
+      
+      for (i in 1:n_about_you){
+        
+        # loop for saving all questions about experts
+        
+        about_you_que <- paste0("about_you_",i)
+        
+        if (about_you_que%in%names(input)){
+
+          if(!is.null(input[[about_you_que]])){
+
+            save_about_you_que <- input[[about_you_que]]
+            save_about_you_colnames <- rep(paste0("que_", i), length(save_about_you_que))
+            
+          } else {
+
+            save_about_you_que <- NA
+            save_about_you_colnames <- paste0("que_", i)
+            
+          }
+
+        } else {
+          
+          save_about_you_que <- NA
+          save_about_you_colnames <- paste0("que_",i)
+          
+        }
+        
+        save[["about_you_all"]] <- c(save[["about_you_all"]],save_about_you_que)
+        save[["about_you_colnames"]] <- c(save[["about_you_colnames"]],save_about_you_colnames)
+        
+      } #close for loop for "about you" questions
+      
+      f_save_answers(save[["about_you_all"]], save[["about_you_colnames"]], paste0(buttons$expert_id,"_about_you.csv"))
+            
+      temp <- buttons$next_home; buttons$next_home + 1
+      buttons$end_home <- 1
+      updateTabsetPanel(session, "top_tabs",
+                            selected = "Instructions"
+          )
+
+      
+      } #close actions relating to "about you" questions
+    
+    
+  })
+  
+  
+  # when using Chips and Bins, and an expert enters or updates their plausible range 
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+      
+      observeEvent(input[[paste0("show_plot_",i)]],{
+        
+        que_name <- eli_que_names[i]
+        
+        # save inputs as reactive values
+        elici_minis[[que_name]] <- input[[paste0("min",i)]]
+        elici_maxis[[que_name]] <- input[[paste0("max",i)]]
+        
+        #check whether plausible range is within parameter limits and elici_minis < elici_maxis
+        condition <- f_cond_min_max(elici_minis[[que_name]], elici_maxis[[que_name]], quant_limit_lower[i], quant_limit_upper[i])
+        
+        if(condition==1){
+          
+          show_plot[[que_name]] <- 1 # show plot
+          enter_plot[[que_name]] <- 0 # do not show feedback on expert's plot
+          
+          # update plot parameters
+          chips_width[[que_name]] <- f_width(elici_minis[[que_name]], elici_maxis[[que_name]], bins)
+          chips_lower[[que_name]] <- f_lower(elici_minis[[que_name]], chips_width[[que_name]], quant_limit_lower[i])
+          chips_upper[[que_name]] <- f_upper(elici_maxis[[que_name]], chips_width[[que_name]], quant_limit_upper[i])
+          chips_nbins[[que_name]] <- f_nbins(chips_lower[[que_name]], chips_upper[[que_name]], chips_width[[que_name]])
+          chips_nchip[[que_name]] <- 2 * chips_nbins[[que_name]]
+          chips_nhigh[[que_name]] <- 2 * chips_nbins[[que_name]]
+          chips_lbins[[que_name]] <- f_lbins(chips_lower[[que_name]], chips_upper[[que_name]], chips_width[[que_name]])  
+          chips_rbins[[que_name]] <- f_rbins(chips_lower[[que_name]], chips_upper[[que_name]], chips_width[[que_name]])
+          chips_value[[que_name]] <- chips_rbins[[que_name]]
+          chips_chips[[que_name]] <- rep(0,chips_nbins[[que_name]])
+          
+        } else {
+          
+          # if condition == 0, who error message
+          showModal(modalDialog (uiOutput (paste0("no_plot_",i)), size="l"))
+          
+        }
+        
+      })
+      
+    }
+  )
+  
+  # when using Chips and Bins, and an expert enters or updates their plot 
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    observeEvent(input[[paste0("enter_plot_",i)]],{
+        
+      que_name <- eli_que_names[i]
+      
+        if(sum(chips_chips[[que_name]]) < chips_nchip[[que_name]]){
+          
+          # error mesage if not all chips are used
+          showModal(modalDialog (uiOutput ("no_chips"), size="l"))
+          
+        } else {
+          
+          enter_plot[[que_name]] <- 1
+          
+        }
+        
+      })
+      
+    })
+  
+  #same as above, for the test plot
+  observeEvent(input[["enter_plot_0"]],{
+    
+    if(sum(chips_chips[["test"]]) < chips_nchip[["test"]]){
+      
+      showModal(modalDialog (uiOutput ("no_chips"), size="l"))
+      
+    } else {
+      
+      enter_plot[["test"]] <- 1
+      
+    }
+    
+  })
+  
+  
+  # when using quartiles or tertiles and an expert enters their plausible range
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    observeEvent(input[[paste0("enter_min_max_",i)]],{
+      
+      que_name <- eli_que_names[i]
+      
+      # save inputs as reactive values
+      elici_minis[[que_name]] <- input[[paste0("min",i)]]
+      elici_maxis[[que_name]] <- input[[paste0("max",i)]]
+      
+      #check whether the plausible range is within parameter limits and elici_minis < elici_maxis
+      condition <- f_cond_min_max(elici_minis[[que_name]], elici_maxis[[que_name]], quant_limit_lower[i], quant_limit_upper[i])
+      
+      if(condition==1){
+        
+        enter_min_max[[que_name]] <- 1
+        
+      } else {
+        
+        #show error message if condition = 0
+        showModal(modalDialog (uiOutput (paste0("no_plot_",i)), size="l"))
+        
+      }
+      
+    })
+    
+  })
+  
+  # when using quartiles and an expert enters their quartiles
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    observeEvent(input[[paste0("enter_quarts_",i)]],{
+      
+      que_name <- eli_que_names[i]
+      
+      # save inputs as reactive values
+      elici_q1[[que_name]] <- input[[paste0("quartile1_",i)]]
+      elici_q2[[que_name]] <- input[[paste0("quartile2_",i)]]
+      elici_q3[[que_name]] <- input[[paste0("quartile3_",i)]]
+      
+      # check whether quartiles are within plausible range and quartiles are in logical order
+      condition <- f_cond_quartiles(elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
+      
+      if(condition==1){
+        
+        enter_quarts[[que_name]] <- 1
+        
+      } else {
+        
+        showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
+        
+      }
+      
+    })
+    
+  })
+  
+  # when using tertiles and an expert enters their quartiles
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    observeEvent(input[[paste0("enter_terts_",i)]],{
+      
+      que_name <- eli_que_names[i]
+      
+      # save inputs as reactive values
+      elici_t1[[que_name]] <- input[[paste0("tertile1_",i)]]
+      elici_t2[[que_name]] <- input[[paste0("tertile2_",i)]]
+      
+      #check whether quartiles are within plausible range and tertiles are in logical order
+      condition <- f_cond_tertiles(elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
+      
+      if(condition==1){
+        
+        enter_terts[[que_name]] <- 1
+        
+      } else {
+        
+        showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
+        
+      }
+      
+    })
+    
+  }
+  )
+  
+  # when expert is ready to move onto next question - save answers and change tab
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+      
+        observeEvent(input[[paste0("next_que_",i)]], {
+          
+          que_name <- eli_que_names[i]
+          
+          if(elicitation_method == "chips and bins"){
+            
+            if(sum(chips_chips[[que_name]]) < chips_nchip[[que_name]]){
+              
+              # show error message if not all chips are used
+              showModal(modalDialog (uiOutput ("no_chips"), size="l"))
+              
+              } else {
+                
+                temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
+                
+                # save answers
+                
+                temp2<-c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], chips_value[[que_name]], chips_chips[[que_name]])
+                save[[paste0("next_que_", i)]] <- temp2
+                save[[paste0("next_que_", i, "_colnames")]] <-   c("expert_id", "min", "max",
+                                                                  paste0("bins_",1:((length(temp2)-2)/2)),
+                                                                  paste0("chip_",1:((length(temp2)-2)/2)))
+                
+                f_save_answers(save[[paste0("next_que_", i)]],
+                               save[[paste0("next_que_", i, "_colnames")]],
+                               paste0(buttons$expert_id,"_que_",i,".csv"))
+                
+          
+              }
+            
+          } else if (elicitation_method == "quartiles"){
+            
+            que_name <- eli_que_names[i]
+            
+            # save most recent inputs as reactive values
+            elici_q1[[que_name]] <- input[[paste0("quartile1_",i)]]
+            elici_q2[[que_name]] <- input[[paste0("quartile2_",i)]]
+            elici_q3[[que_name]] <- input[[paste0("quartile3_",i)]]
+            
+            # check whether quartiles are within plausible range and quartiles are in logical order
+            condition <- f_cond_quartiles(elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
+            
+            if(condition==0){
+              
+              showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
+              
+            } else {
+              
+              temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
+              
+              # save answers
+              
+              temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
+              save[[paste0("next_que_", i)]] <- temp1
+              save[[paste0("next_que_", i, "_colnames")]] <- c("expert_id", "min", "max", "lower_quartile", "median", "upper quartile")
+              
+              f_save_answers(save[[paste0("next_que_", i)]],
+                             save[[paste0("next_que_", i, "_colnames")]],
+                             paste0(buttons$expert_id,"_que_",i,".csv"))
+              
+              
+            }
+            
+            
+          } else if (elicitation_method == "tertiles"){
+            
+            que_name <- eli_que_names[i]
+            
+            # save most recent inputs as reactive values
+            elici_t1[[que_name]] <- input[[paste0("tertile1_",i)]]
+            elici_t2[[que_name]] <- input[[paste0("tertile2_",i)]]
+            
+            # check whether quartiles are within plausible range and tertiles are in logical order
+            condition <- f_cond_tertiles(elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
+            
+            if(condition==0){
+              
+              showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
+              
+            } else {
+              
+              temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
+              
+              # save answers
+              
+              temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
+              save[[paste0("next_que_", i)]] <- temp1
+              save[[paste0("next_que_", i, "_colnames")]] <- c("expert_id", "min", "max", "lower_tertile", "upper tertile")
+              
+              f_save_answers(save[[paste0("next_que_", i)]],
+                             save[[paste0("next_que_", i, "_colnames")]],
+                             paste0(buttons$expert_id,"_que_",i,".csv"))
+              
+            
+            }
+            
+          }
+          
+          if(tot_eli_ques > 1 & i < tot_eli_ques){
+            
+            # if there are more questions to come, move onto the next tab
+            
+            updateTabsetPanel(session, "question_tabs",
+                              selected = paste0("Question ",i+1))
+            
+          } else {
+            
+            # if this is the last question, show a pop up message
+            showModal(modalDialog (uiOutput ("end_of_exercise"), size="l"))
+            
+          }
+    
+  })
+      
+    })
+  
+  
+  # when an expert finishes training
+  
+  observeEvent(input$next_que_0,{
+    
+    # once training is complete add this condition, and similar for other methods:
+    # if (elicitation_method == "chips and bins"){
+    
+      if(sum(chips_chips[["test"]]) < chips_nchip[["test"]]){
+        
+        showModal(modalDialog (uiOutput ("no_chips"), size="l"))
+        
+      } else {
+        
+        temp <- buttons$next_que_0; buttons$next_que_0 <- temp+1
+        updateTabsetPanel(session, "top_tabs",
+                          selected = "Background information"
+        )
+        
+      }
+
+  })
+  
+  observeEvent(input$start_que,{
+    
+    temp <- buttons$start_que; buttons$start_que <- temp+1
+    
+  })
+  
+  observeEvent(input$start_que,{
+    
+    updateTabsetPanel(session, "top_tabs",
+                      selected = "Questions"
+    )
+    
+  })
+
+  
+  ######## UIs #######
+  
+  ##### error messages #####
+  
+  # error message when an expert doesn't enter their password
+  
+  output$no_password <- renderUI({
+    
+    tagList(div(strong("Please note that you must enter your password in order to proceed.")))
+    
+  })
+  
+  # error message when expert's plausible range is not within parameter limits or max < min
+  # text depends on whether the parameter has lower and upper limits
+  
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    output[[paste0("no_plot_",i)]]<-renderUI({
+      
+      if(!is.na(quant_limit_lower[i]) & !is.na(quant_limit_upper[i])){
+        
+        tagList(div(
+          strong("Please make sure you've entered the minimum and the 
+             maximum, that both values are between ", quant_limit_lower[i],
+                 " and ", quant_limit_upper[i],
+                 ", and that the minimum is lower than the maximum.")
+        ))
+        
+      } else if (!is.na(quant_limit_lower[i])) {
+        
+        tagList(div(
+          strong("Please make sure you've entered the minimum and the 
+             maximum, that both values are greater than ", quant_limit_lower[i],
+                 ", and that the minimum is lower than the maximum.")
+        ))
+        
+      } else if (!is.na(quant_limit_upper[i])) {
+        
+        tagList(div(
+          strong("Please make sure you've entered the minimum and the 
+             maximum, that both values are less than ", quant_limit_upper[i],
+                 ", and that the minimum is lower than the maximum.")
+        ))
+        
+      } else {
+        
+        tagList(div(
+          strong("Please make sure you've entered the minimum and the 
+             maximum, and that the minimum is lower than the maximum.")
+        ))
+        
+      }
+      
+    }) #close no_plot_i interface
+    
+  }) #close no_plot_i lapply
+  
+
+  # error message when not all chips are used
+  
+  output$no_chips<-renderUI({
+    
+    tagList(div(
+      p(strong("Please make sure you use all the available chips before proceeding."))
+    ))
+    
+  })
+  
+  # error message when quartiles or tertiles are not within expert's plausible range or in logical order
+  
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    output[[paste0("no_quantiles_",i)]]<-renderUI({
+      
+      que_name <- eli_que_names[i]
+      
+      if(elicitation_method == "quartiles"){
+        
+        tagList(div(
+          strong("Please make sure you've entered all three quantities,
+               that all three values are between ", elici_minis[[que_name]],
+                 " and ", elici_maxis[[que_name]],
+                 ", and that your midpoint is between your lower and upper quartiles.")
+        ))
+        
+      } else if(elicitation_method == "tertiles"){
+        
+        tagList(div(
+          strong("Please make sure you've entered both quantities,
+               that both values are between ", elici_minis[[que_name]],
+                 " and ", elici_maxis[[que_name]],
+                 ", and that your lower tertile is less than your upper tertile.")
+        ))
+        
+      } 
+      
+      
+    })
+    
+  })
+  
+  output$end_of_exercise <- renderUI({
+    
+    tagList(div(
+      p(strong("You have now completed the exercise. You can go back and check (and if required, edit) your answers, or simply close this web page."))
+    ))
+    
+  })
+  
+  ##### chips and bins plots #####
+  
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    que_name <- eli_que_names[i]
+    
+    output[[paste0("plot_",i)]]<- renderPlot({
+      f_plot_the_plot(chips_lower[[que_name]], chips_upper[[que_name]],
+                      chips_nhigh[[que_name]], chips_nbins[[que_name]], 
+                      chips_lbins[[que_name]], chips_rbins[[que_name]], 
+                      chips_chips[[que_name]], quantity[i], units[i])
+    }, height = 330, width = 400)#530
+    
+    observeEvent(input[[paste0("location_",i)]], { #add red chips to bins
+      chips_chips[[que_name]] <- f_add_chips(chips_nbins[[que_name]],
+                                             chips_lbins[[que_name]],
+                                             chips_rbins[[que_name]],
+                                             chips_nchip[[que_name]], 
+                                             chips_chips[[que_name]], 
+                                             input[[paste0("location_",i)]]$x,
+                                             input[[paste0("location_",i)]]$y)
+    })
+    
+  })
+
+  # chips and bins plot for training
+  
+  output[["plot_0"]]<- renderPlot({
+    f_plot_the_plot(chips_lower[["test"]], chips_upper[["test"]],
+                    chips_nhigh[["test"]], chips_nbins[["test"]], 
+                    chips_lbins[["test"]], chips_rbins[["test"]], 
+                    chips_chips[["test"]], "length of stay", "days")
+  }, height = 330, width = 400)#530
+  
+  observeEvent(input[["location_0"]], { #add red chips to bins
+    chips_chips[["test"]] <- f_add_chips(chips_nbins[["test"]],
+                                                   chips_lbins[["test"]],
+                                                   chips_rbins[["test"]],
+                                                   chips_nchip[["test"]], 
+                                                   chips_chips[["test"]], 
+                                                   input[["location_0"]]$x,
+                                                   input[["location_0"]]$y)
+  })
+  
+  
+  ##### UI interfaces for each tab #####
+  
+  ## home page
+  output$tab_home<-renderUI({
+    
+    tagList(div(
+      br(),br(),
+      
+      if (buttons$next_home == -1){
+        
+        tagList(div(br(),
+                    "Please enter the password you've been provided, then click on 'Begin exercise'.",
+                    br(),
+                    fluidRow(
+                      column(3, numericInput("expert_id", "", NULL, min = 0)),
+                      br(),column(1, offset = 6, actionButton("next_home", "Begin exercise", width='120px', style="background-color: lightgrey"))
+                    ),
+                    br(), br()))
+        
+      } else if (buttons$next_home == 0){
+        
+        tagList(div(includeHTML("www/text_home.htm"), br(),
+                    fluidRow(
+                      column(9, p(style="font-size:90%;", "Please click on 'Next' to continue")),
+                      column(1, actionButton("next_home", "Next", width='120px', style="background-color: lightgrey"))
+                      )
+                    ))
+        
+      } else if (buttons$next_home==1 & include_consent) {
+        
+        tagList(div(includeHTML("www/text_consent.htm"), br(),
+                    fluidRow( 
+                      column(9, p(style="font-size:90%;", "Please click on 'Next' to continue")),
+                      column(1, actionButton("next_home", "Next", width='120px', style="background-color: lightgrey"))
+                    )
+        ))
+        
+      } else if ((buttons$next_home>=1 & include_about_you & buttons$end_home == 0)|
+                 (buttons$next_home>=2 & include_consent & include_about_you & buttons$end_home == 0)){
+        
+        tagList(div(
+          about_you_ques, br(),
+          fluidRow( 
+            column(9, p(style="font-size:90%;", "Please click on 'Next' to continue")),
+            column(1, actionButton("next_home", "Save", width='120px', style="background-color: lightgrey"))
+          )
+        ))
+        
+      } else {
+        
+        "Thank you. You may proceed to the 'Instrcutions' tab"
+        
+      }
+      
+      ))
+      
+  }) #close output$tab_home
+  
+  
+  ## Instructions/training
+  output$tab_instructions<-renderUI({
+    
+    if(conditional_release & buttons$end_home == 0){
+      
+      tagList(div(br(),br(),
+                  "Please make sure you have read all relevant sections 
+                  and answered all questions on the 'Introduction' tab in order to proceed."
+      ))
+      
+    } else {
+      
+      tagList(div(
+        br(),br(),
+        includeHTML("www/text_instructions.htm"),
+        br(),hr(),br(),
+        p("Please add", chips_nchip$test,"chips to the grid below to express your uncertainty. 
+        The more chips you place in a particular bin the more certain you are 
+        that the proportion lies in that bin."),br(), br(),
+        "You can use",strong(chips_nchip$test-sum(chips_chips$test)), " more chips.",
+        HTML("<div style='height: 350px;'>"),
+        plotOutput("plot_0", click="location_0"),
+        HTML("</div>"), br(),
+        ifelse(enter_plot$test == 0,#****
+               tagList(div(
+                 fluidRow(
+                   column(9, "When you are happy with your answers please click 'Enter', then scroll down."),
+                   column(2, actionButton("enter_plot_0", "Enter", width='120px', style="background-color: lightgrey")
+                   )), br(), br(),
+               )),
+               tagList(div(
+                 hr(), br(),
+                 strong("Summary"),br(),br(),
+                 "Your answers imply that",br(),br(),
+                 div(f_text_fback_chips(chips_chips$test, chips_lbins$test, chips_rbins$test, "length of stay", "days"),
+                     style='width:700px; padding-left:45px;'), br(),br(),
+                 "If these summary statements do not represent your beliefs you can modify the grid.",br(),
+                 hr(),
+                 fluidRow( 
+                   column(9, p(style="font-size:90%;", "Once you are satisfied that you can express your beliefs in this way, click on 'Next' to continue.")),
+                   column(1, tagList(div(actionButton("next_que_0", "Next", width='120px', style="background-color: lightgrey"))))
+                   ), br(),
+                 strong("Note you will be able to refer to these instructions at any point in the exercise by clicking on the 'Instructions' tab."), br(),br(), br(), br()
+               ))
+        )
+        
+      ))#close tagList
+    }
+    
+
+    
+  }) #close output$tab_instructions
+  
+  
+  ## Background information (should be bespoke)
+  output$tab_background_info<-renderUI({
+    
+    if(conditional_release & buttons$next_que_0 == 0){
+      
+      tagList(div(br(),br(),
+                  "Please make sure you have completed the practice example 
+                  on the 'Instructions' tab in order to proceed."
+      ))
+      
+    } else {
+      
+      tagList(div(
+        br(),br(),
+        includeHTML("www/text_background_info.htm"), br(),
+        fluidRow(
+          column(8, p(style="font-size:90%;", "Please click on 'Next' to start the exercise.")),
+          column(1, offset=1, tagList(div(actionButton("start_que", "Next", width='120px', style="background-color: lightgrey"))))),br(),
+        strong("Note you will be able to refer to this information at any point in the exercise by clicking on the 'Background information' tab."),
+        br(),br(), br(), br()
+        ))
+      
+    }
+    
+  }) #close output$tab_background_info
+  
+  
+  ## Elicitation questions
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+    
+    que_name <- eli_que_names[i]
+    
+    output[[paste0("eli_question_",i)]] <- renderUI({
+      
+      if(elicitation_method == "chips and bins"){
+        
+        tagList(div(
+          
+          f_chips_and_bins(i,
+                           elici_minis[[que_name]],
+                           elici_maxis[[que_name]],
+                           chips_nchip[[que_name]],
+                           chips_chips[[que_name]],
+                           chips_lbins[[que_name]],
+                           chips_rbins[[que_name]],
+                           show_plot[[que_name]],
+                           enter_plot[[que_name]]       
+          )
+          
+        ))
+        
+      } else if(elicitation_method == "quartiles"){
+        
+        tagList(div(
+          
+          f_quartiles(i,
+                      elici_minis[[que_name]],
+                      elici_maxis[[que_name]],
+                      elici_q1[[que_name]],
+                      elici_q2[[que_name]],
+                      elici_q3[[que_name]],
+                      enter_min_max[[que_name]],
+                      enter_quarts[[que_name]]
+          )
+          
+        ))
+        
+      } else if(elicitation_method == "tertiles"){
+        
+        tagList(div(
+          
+          f_tertiles(i,
+                     elici_minis[[que_name]],
+                     elici_maxis[[que_name]],
+                     elici_t1[[que_name]],
+                     elici_t2[[que_name]],
+                     enter_min_max[[que_name]],
+                     enter_terts[[que_name]]
+          )
+          
+        ))
+        
+      }
+      
+
+      
+    }) #close output$eli_question_i
+    
+  }) #close lapply
+  
+  
+  ## Tab with questions
+  output$tab_questions<-renderUI({
+    
+    if(conditional_release & buttons$start_que == 0){
+      
+      tagList(div(br(),br(),
+                  "Please make sure you have read all relevant information 
+                  on the 'Bakcground information' tab in order to proceed."
+      ))
+      
+    } else {
+    
+    if(tot_eli_ques == 1){
+
+      uiOutput("eli_question_1")
+
+      } else {
+        
+        do.call(tabsetPanel, c(id="question_tabs",
+                               lapply(1:tot_eli_ques, function(i) {
+                                 
+                                 tabPanel(paste0("Question ",i),
+                                          if (conditional_release & i > 1 & buttons$que_no < i){
+                                            tagList(div(br(),br(),
+                                            paste0("Please make sure you have answered Question ", i-1,
+                                                   " and saved your answers in order to proceed.")
+                                            ))
+                                          } else {
+                                            uiOutput(paste0("eli_question_",i))
+                                          }
+                                            
+                                   )
+                                   
+  
+                                 
+                                 })
+                               
+        ))
+        
+        
+      } #action for multiple questions
+      
+    }
+    
+  }) #close output$tab_background_info 
+  
+  
+} #close shinyServer
+
+
