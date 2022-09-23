@@ -7,7 +7,7 @@ eli_que_names <- paste0("que_",1:tot_eli_ques)
 
 # number of "pages" on the Home tab, used in server.R file
 # to determine when to skip to the next tab
-last_home_page <- 1 + (include_consent == "yes") + (include_about_you == "yes")
+last_home_page <- 1 + include_consent + include_about_you
 
 ########## functions ##########
 
@@ -249,6 +249,55 @@ f_text_fback_chips <- function(chips_chips,chips_lbins,chips_rbins,quantity,unit
 
 }
 
+#### quartiles functions ####
+
+f_quartile_figure <- function(elici_minis,elici_maxis,elici_q1,elici_q2,elici_q3) {
+  
+  par(mar=c(2,0,2,0), bty="n")
+  
+  plot(c(elici_minis, elici_maxis), c(-1,2), type="n", 
+       ylim = c(0, 1),  ylab = "", yaxt = "n",
+       xlim = c(elici_minis, elici_maxis), xlab = "", xaxt = "n")
+  
+  axis(1, at=c(elici_minis, elici_q1, elici_q2, elici_q3, elici_maxis),
+       labels = c(elici_minis, elici_q1, elici_q2, elici_q3, elici_maxis),
+       tick = c(elici_minis, elici_q1, elici_q2, elici_q3, elici_maxis),
+       line = NA)
+  axis(3, at=c(elici_q1, elici_q2, elici_q3),
+       labels = c("Q1", "M", "Q3"),
+       tick = FALSE,
+       line = NA)
+  
+  rect(elici_minis, 0, elici_maxis, 1, col = "grey", border = "black")
+  abline(v = elici_q1, lty=2)
+  abline(v = elici_q2, lty=2)
+  abline(v = elici_q3, lty=2)
+  
+}
+
+f_tertile_figure <- function(elici_minis,elici_maxis,elici_t1,elici_t2) {
+  
+  par(mar=c(2,0,2,0), bty="n")
+  
+  plot(c(elici_minis, elici_maxis), c(-1,2), type="n", 
+       ylim = c(0, 1),  ylab = "", yaxt = "n",
+       xlim = c(elici_minis, elici_maxis), xlab = "", xaxt = "n")
+  
+  axis(1, at=c(elici_minis, elici_t1, elici_t2, elici_maxis),
+       labels = c(elici_minis, elici_t1, elici_t2, elici_maxis),
+       tick = c(elici_minis, elici_t1, elici_t2, elici_maxis),
+       line = NA)
+  axis(3, at=c(elici_t1, elici_t2),
+       labels = c("T1", "T2"),
+       tick = FALSE,
+       line = NA)
+  
+  rect(elici_minis, 0, elici_maxis, 1, col = "grey", border = "black")
+  abline(v = elici_t1, lty=2)
+  abline(v = elici_t2, lty=2)
+  
+}
+
 #### conditions ####
 
 f_cond_min_max <- function(min, max, lower_limit, upper_limit){
@@ -295,7 +344,7 @@ f_cond_quartiles <- function(elici_minis, elici_maxis, elici_q1, elici_q2, elici
 
   if(!is.na(elici_q1) & !is.na(elici_q2) & !is.na(elici_q3)) {
 
-    if(elici_minis <= elici_q1 & elici_q1 <= elici_q2 & elici_q2 <= elici_q3 & elici_q3 <= elici_maxis){
+    if(elici_minis < elici_q1 & elici_q1 < elici_q2 & elici_q2 < elici_q3 & elici_q3 < elici_maxis){
 
       cond<-1
 
@@ -322,7 +371,7 @@ f_cond_tertiles <- function(elici_minis, elici_maxis, elici_t1, elici_t2) {
 
   if(!is.na(elici_t1) & !is.na(elici_t2)) {
 
-    if(elici_minis <= elici_t1 & elici_t1 <= elici_t2 & elici_t2 <= elici_maxis){
+    if(elici_minis < elici_t1 & elici_t1 < elici_t2 & elici_t2 < elici_maxis){
 
       cond<-1
 
@@ -345,6 +394,7 @@ f_cond_tertiles <- function(elici_minis, elici_maxis, elici_t1, elici_t2) {
 #required for connection to dropbox
 token <- if(file.exists("droptoken.rds")){readRDS("droptoken.rds")}else{NULL}
 drop_acc(dtoken = token)
+token$refresh()
 
 f_save_answers <- function(data,que_colnames,name1) {
 
@@ -353,8 +403,8 @@ f_save_answers <- function(data,que_colnames,name1) {
   data <- t(data)
   colnames(data) <- que_colnames
   # Create a unique file name
-  fileName <- sprintf(name1, as.integer(Sys.time()), digest::digest(data))
-
+  fileName <- name1
+  
   if(is.null(token)){
     if (!dir.exists("SEE outputs")){
       dir.create("SEE outputs")
@@ -369,6 +419,37 @@ f_save_answers <- function(data,que_colnames,name1) {
     drop_upload(filePath, path = folder_name, dtoken = token)
   }
 
+}
+
+f_load_answers <- function(unique_id) {
+
+  if(is.null(token)){
+    if (!dir.exists("SEE outputs")){
+      dir.create("SEE outputs")
+    }
+   
+    # ADD CODE #
+    
+    } else {
+
+    filesInfo <- drop_dir(folder_name)
+    if(nrow(filesInfo) == 0){
+      data <- NA
+    } else {
+      temp <- filesInfo$path_display
+      filePaths <- temp[grep(unique_id, temp)]
+      if(length(filePaths) == 0){
+        data <- NA
+      } else {
+        data <- lapply(filePaths, drop_read_csv, stringsAsFactors = FALSE)
+        # Concatenate all data together into one data.frame
+        data <- do.call(cbind, data)
+      }
+      
+    }
+    data
+
+    }
 }
 
 
