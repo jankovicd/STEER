@@ -427,8 +427,21 @@ f_load_answers <- function(unique_id) {
     if (!dir.exists("SEE outputs")){
       dir.create("SEE outputs")
     }
-   
-    # ADD CODE #
+    filesInfo <- dir("SEE outputs")
+    if(length(filesInfo)==0){
+      data <- NA
+    } else {
+      temp <- filesInfo[grep(unique_id, filesInfo)]
+      if(length(temp) == 0){
+        data <- NA
+      } else {
+        filePaths <- paste0("SEE outputs/",filesInfo[grep(unique_id, filesInfo)])
+        data <- lapply(filePaths, read.csv, stringsAsFactors = FALSE)
+        # Concatenate all data together into one data.frame
+        data <- do.call(cbind, data)
+      }
+
+    }
     
     } else {
 
