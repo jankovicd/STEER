@@ -394,7 +394,7 @@ f_cond_tertiles <- function(elici_minis, elici_maxis, elici_t1, elici_t2) {
 #required for connection to dropbox
 token <- if(file.exists("droptoken.rds")){readRDS("droptoken.rds")}else{NULL}
 drop_acc(dtoken = token)
-token$refresh()
+if(file.exists("droptoken.rds")){token$refresh()}else{NULL}
 
 f_save_answers <- function(data,que_colnames,name1) {
 
