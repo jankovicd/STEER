@@ -74,7 +74,7 @@ Text on the home page, the consent form, instructions and background information
   
 3. Select “Word”.
  
-![](save_htm.png)
+![](www/save_htm.png)
  
 Once you have finished editing the file, save it as a htm file, overwriting the original.
 
