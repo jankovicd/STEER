@@ -21,7 +21,7 @@ f_chips_and_bins <- function(que_no,
                        tagList(div(em("Note that both values should be less than ", quant_limit_upper[que_no],"."))),
                        tagList(div(em("Note that both values should be greater than ", quant_limit_lower[que_no],".")))))),
   br(),br(),
-  p("I believe that it's very unlikely that:"), 
+  p("I believe that it's very unlikely that:"),
   tags$li(div(style = "display: inline-block; vertical-align:middle; width: 210px;",HTML(paste0("the ", quantity[que_no], " is less than"))),
           div(style = "display: inline-block; vertical-align:top; width: 75px;", numericInput(paste0("min",que_no), NULL, elici_minis, min = quant_limit_lower[que_no], max = quant_limit_upper[que_no])),
           div(style = "display: inline-block; vertical-align:middle; width: 10px;", HTML("")),
@@ -35,21 +35,21 @@ f_chips_and_bins <- function(que_no,
          tagList(div(
            fluidRow(
              column(9, p(style="font-size:90%;", "When you are happy with your answers please click on 'Continue'.")),
-             column(1, 
+             column(1,
                     actionButton(paste0("show_plot_", que_no), "Continue", width = '120px', style = "background-color: lightgrey")), br()
            )
            )),
          tagList(div(
            fluidRow(
              column(9, p(style = "font-size:90%;", "You can update your range by entering new values and clicking 'Update range'.")),
-             column(1, 
+             column(1,
                     actionButton(paste0("show_plot_", que_no), "Update range", width = '120px', style="background-color: lightgrey"))
              ),
            hr(),br(),
-           p("Please add", chips_nchip,"chips to the grid below to express your uncertainty. 
-      The more chips you place in a particular bin the more certain you are 
+           p("Please add", chips_nchip,"chips to the grid below to express your uncertainty.
+      The more chips you place in a particular bin the more certain you are
       that the proportion lies in that bin."),br(), br(),
-           "You can use",strong(chips_nchip-sum(chips_chips)), " more chips.",
+           "You can use",strong(round(chips_nchip-sum(chips_chips),digits=0)), " more chips.",
            HTML("<div style='height: 350px;'>"),
            plotOutput(paste0("plot_",que_no), click=paste0("location_",que_no)),
            HTML("</div>"), br(),
@@ -75,20 +75,20 @@ f_chips_and_bins <- function(que_no,
                                    class = "form-control shiny-bound-input",
                                    style = "width: 800px; height: 34px")
                           )), br(), br(),
-                     fluidRow( 
+                     fluidRow(
                         column(9, p(style="font-size:90%;", "Once you are satisfied that the statements represent your beliefs, click on 'Save', then scroll down to continue.")),
                         column(1, actionButton(paste0("next_que_", que_no), "Save", width='120px', style="background-color: lightgrey")
                         )), br()), br(),
                       "Note that you can edit your answer at any point, but remember to save your new inputs.", br(), br(), br()
                   ))
            )
-           
+
            ))
-         
-         
+
+
          )
-  
-  
+
+
 )
 
 )
@@ -189,8 +189,8 @@ f_tertiles <- function(que_no,
                        enter_min_max,
                        enter_terts,
                        comment)
-  
-  
+
+
   (p(
     br(), br(),
     strong(eli_que_text[que_no]), br(),

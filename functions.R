@@ -17,7 +17,8 @@ last_home_page <- 1 + include_consent + include_about_you
 
 # options for bin width in Chips and Bins plots
 # used by f_width function to creaste chips_width reactive values
-bins <- c(1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
+bins <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.5,
+          1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
 
 # derives the bins width from expert's plausible range (elicit_minis and elici_maxis)
 f_width <- function(elici_minis, elici_maxis, bins)
@@ -114,7 +115,7 @@ f_add_chips <- function(chips_nbins, chips_lbins, chips_rbins, chips_nchip, chip
     if(coord_x > chips_lbins[i] & coord_x < chips_rbins[i]){
       temp <- chips_chips[i]
 
-      if(coord_y > temp & coord_y < chips_nchip & round(sum(chips_chips), digits=0) < chips_nchip){
+      if(coord_y > temp & coord_y < chips_nchip & round(chips_nchip-sum(chips_chips), digits=0) > 0){
         chips_chips[i] <- temp+1
       }
       if(coord_y < temp & round(sum(chips_chips), digits = 0) > 0){
@@ -252,13 +253,13 @@ f_text_fback_chips <- function(chips_chips,chips_lbins,chips_rbins,quantity,unit
 #### quartiles functions ####
 
 f_quartile_figure <- function(elici_minis,elici_maxis,elici_q1,elici_q2,elici_q3) {
-  
+
   par(mar=c(2,0,2,0), bty="n")
-  
-  plot(c(elici_minis, elici_maxis), c(-1,2), type="n", 
+
+  plot(c(elici_minis, elici_maxis), c(-1,2), type="n",
        ylim = c(0, 1),  ylab = "", yaxt = "n",
        xlim = c(elici_minis, elici_maxis), xlab = "", xaxt = "n")
-  
+
   axis(1, at=c(elici_minis, elici_q1, elici_q2, elici_q3, elici_maxis),
        labels = c(elici_minis, elici_q1, elici_q2, elici_q3, elici_maxis),
        tick = c(elici_minis, elici_q1, elici_q2, elici_q3, elici_maxis),
@@ -267,22 +268,22 @@ f_quartile_figure <- function(elici_minis,elici_maxis,elici_q1,elici_q2,elici_q3
        labels = c("Q1", "M", "Q3"),
        tick = FALSE,
        line = NA)
-  
+
   rect(elici_minis, 0, elici_maxis, 1, col = "grey", border = "black")
   abline(v = elici_q1, lty=2)
   abline(v = elici_q2, lty=2)
   abline(v = elici_q3, lty=2)
-  
+
 }
 
 f_tertile_figure <- function(elici_minis,elici_maxis,elici_t1,elici_t2) {
-  
+
   par(mar=c(2,0,2,0), bty="n")
-  
-  plot(c(elici_minis, elici_maxis), c(-1,2), type="n", 
+
+  plot(c(elici_minis, elici_maxis), c(-1,2), type="n",
        ylim = c(0, 1),  ylab = "", yaxt = "n",
        xlim = c(elici_minis, elici_maxis), xlab = "", xaxt = "n")
-  
+
   axis(1, at=c(elici_minis, elici_t1, elici_t2, elici_maxis),
        labels = c(elici_minis, elici_t1, elici_t2, elici_maxis),
        tick = c(elici_minis, elici_t1, elici_t2, elici_maxis),
@@ -291,11 +292,11 @@ f_tertile_figure <- function(elici_minis,elici_maxis,elici_t1,elici_t2) {
        labels = c("T1", "T2"),
        tick = FALSE,
        line = NA)
-  
+
   rect(elici_minis, 0, elici_maxis, 1, col = "grey", border = "black")
   abline(v = elici_t1, lty=2)
   abline(v = elici_t2, lty=2)
-  
+
 }
 
 #### conditions ####
@@ -404,7 +405,7 @@ f_save_answers <- function(data,que_colnames,name1) {
   colnames(data) <- que_colnames
   # Create a unique file name
   fileName <- name1
-  
+
   if(is.null(token)){
     if (!dir.exists("SEE outputs")){
       dir.create("SEE outputs")
@@ -442,7 +443,7 @@ f_load_answers <- function(unique_id) {
       }
 
     }
-    
+
     } else {
 
     filesInfo <- drop_dir(folder_name)
@@ -458,7 +459,7 @@ f_load_answers <- function(unique_id) {
         # Concatenate all data together into one data.frame
         data <- do.call(cbind, data)
       }
-      
+
     }
     data
 
