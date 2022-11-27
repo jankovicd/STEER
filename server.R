@@ -1,6 +1,4 @@
 
-library(rdrop2)
-
 source("manual_inputs.R", local = TRUE)
 source("functions.R", local = TRUE)
 source("elicitation_questions_ui.R", local = TRUE)
@@ -16,7 +14,6 @@ function (input, output, session) {
 
   elici_minis <- reactiveValues(test = 9) # lower limit of expert's plausible range
   elici_maxis <- reactiveValues(test = 17) # upper limit of expert's plausible range
-
 
   if(elicitation_method == "chips and bins"){
 
@@ -61,10 +58,22 @@ function (input, output, session) {
                             end_home = 0, # indicator (>0) that the expert is on the last page of the home tab
                             next_que_0 = 0, # indicator (>0) that training is complete, switch to next tab
                             start_que = 0, # indicator (>0) that the expert has read background information
-                            que_no = 1) # the next question the expert needs to answer
+                            que_no = 1, # the next question the expert needs to answer
+                            enter_previous_responses = 0,
+                            radio_previous_responses = 0,
+                            get_previous_responses = 0)
 
   save <- reactiveValues(about_you_all = 0, # object for saving "about you" questions
-                         about_you_colnames = "expert_id") # column names for "about_you" questions
+                         about_you_colnames = "expert_id", # column names for "about_you" questions
+                         all_answers = 0,
+                         all_answers_colnames = 0)
+
+  if (dummy_app) {
+
+    buttons$expert_id <- 1111
+    buttons$enter_unique_id <- 1
+
+  }
 
   for (i in eli_que_names){
 
@@ -118,6 +127,115 @@ function (input, output, session) {
 
   ##### button clicks #####
 
+  observeEvent(input$enter_previous_responses,{
+
+    buttons$enter_previous_responses <- 1
+    buttons$radio_previous_responses <- input$radio_previous_responses
+
+    })
+
+  observeEvent(input$get_previous_responses, {
+
+    file1 <- input[["load_past_answers"]]
+    ext <- tools::file_ext(file1$datapath)
+    req(file1)
+    validate(need(ext == "csv", "Please upload a csv file"))
+
+    previous_responses <- read.csv(file1$datapath, header = TRUE)[-1]
+
+    buttons$expert_id <- previous_responses["expert_id"]
+    buttons$enter_unique_id <- 1
+
+    # check answers relating to elicitation
+    temp1 <- colnames(previous_responses)[grep("_min",colnames(previous_responses))]
+
+    if(length(temp1)>0){
+
+      # get the list of elicitation questions the experts had answered before
+      answered_questions <- as.numeric(gsub(".*?([0-9]+).*", "\\1", temp1))
+
+      for (i in answered_questions) {
+        # reload experts previous answers into reactive values
+
+        que_name <- eli_que_names[i]
+
+        elici_minis[[que_name]] <- as.numeric(previous_responses[paste0(que_name,"_min")])
+        elici_maxis[[que_name]] <- as.numeric(previous_responses[paste0(que_name,"_max")])
+
+        if(paste0(que_name,"_comment")%in%colnames(previous_responses)){
+
+          comments[[que_name]] <- as.character(previous_responses[paste0(que_name,"_comment")])
+
+        }
+
+        if(elicitation_method == "chips and bins"){
+
+          chips_width[[que_name]] <- f_width(elici_minis[[que_name]], elici_maxis[[que_name]], bins)
+          chips_lower[[que_name]] <- f_lower(elici_minis[[que_name]], chips_width[[que_name]], quant_limit_lower[i])
+          chips_upper[[que_name]] <- f_upper(elici_maxis[[que_name]], chips_width[[que_name]], quant_limit_upper[i])
+          chips_nbins[[que_name]] <- f_nbins(chips_lower[[que_name]], chips_upper[[que_name]], chips_width[[que_name]])
+          chips_nchip[[que_name]] <- 2 * chips_nbins[[que_name]]
+          chips_nhigh[[que_name]] <- 2 * chips_nbins[[que_name]]
+          chips_lbins[[que_name]] <- f_lbins(chips_lower[[que_name]], chips_upper[[que_name]], chips_width[[que_name]])
+          chips_rbins[[que_name]] <- f_rbins(chips_lower[[que_name]], chips_upper[[que_name]], chips_width[[que_name]])
+          chips_value[[que_name]] <- chips_rbins[[que_name]]
+
+          chips_chips[[que_name]] <- unlist(previous_responses[grep(paste0(que_name,"_chip"),colnames(previous_responses))])
+
+          show_plot[[que_name]]  <- 1
+          enter_plot[[que_name]] <- 1
+
+        } else if (elicitation_method == "quartiles"){
+
+          elici_q1[[que_name]] <- unlist(previous_responses[paste0(que_name,"_lower_quartile")])
+          elici_q2[[que_name]] <- unlist(previous_responses[paste0(que_name,"_median")])
+          elici_q3[[que_name]] <- unlist(previous_responses[paste0(que_name,"_upper_quartile")])
+
+          enter_min_max[[que_name]] <- 1
+          enter_quarts[[que_name]] <- 1
+
+        } else {
+
+          elici_t1[[que_name]] <- unlist(previous_responses[paste0(que_name,"_lower_tertile")])
+          elici_t2[[que_name]] <- unlist(previous_responses[paste0(que_name,"_upper_tertile")])
+
+          enter_min_max[[que_name]] <- 1
+          enter_terts[[que_name]] <- 1
+
+        }
+
+      }
+
+      buttons$next_home <- last_home_page
+      buttons$end_home <- 1
+      buttons$next_que <- 1
+      buttons$start_que <- 1
+      buttons$que_no <- answered_questions[length(answered_questions)] + 1
+
+      updateTabsetPanel(session, "top_tabs", selected = "Questions")
+      updateTabsetPanel(session, "question_tabs", selected = paste0("Question ", buttons$que_no))
+
+
+    } else {
+
+      temp2 <- colnames(previous_responses)[grep("about_you",colnames(previous_responses))]
+
+      if (length(temp2)>0){
+        # if the expert has answered "about_you" questions, skip to "Instructions" tab
+
+        buttons$next_home <- last_home_page
+        buttons$end_home <- 1
+
+        updateTabsetPanel(session, "top_tabs",
+                          selected = "Instructions"
+        )
+
+      }
+
+    }
+
+  })
+
   observeEvent(input$enter_unique_id,{
 
     if ("expert_id"%in%names(input)) {
@@ -130,6 +248,8 @@ function (input, output, session) {
         buttons$expert_id <- input$expert_id
         save$about_you_all <- buttons$expert_id
         buttons$enter_unique_id <- 1
+
+        if(save_method == "dropbox"){
 
         # load previous answers
         previous_responses <- f_load_answers(buttons$expert_id)
@@ -154,7 +274,7 @@ function (input, output, session) {
 
               if(paste0(que_name,"_comment")%in%colnames(previous_responses)){
 
-                comments[[que_name]] <- unlist(previous_responses[paste0(que_name,"_comment")])
+                comments[[que_name]] <- as.character(previous_responses[paste0(que_name,"_comment")])
 
               }
 
@@ -226,6 +346,8 @@ function (input, output, session) {
 
         }
 
+        }
+
       } else {
 
         showModal(modalDialog (uiOutput ("no_unique_id"), size="l"))
@@ -240,6 +362,9 @@ function (input, output, session) {
 
 
   })
+
+
+
 
     observeEvent(input$next_home,{
 
@@ -551,6 +676,90 @@ function (input, output, session) {
 
   })
 
+  if(save_method == "local"){
+
+    if(elicitation_method == "chips and bins"){
+
+      conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
+
+        reactive({
+
+          ifelse(sum(chips_chips[[eli_que_names[i]]]) < chips_nchip[[eli_que_names[i]]],
+                 0,
+                 1)
+        })
+
+      })
+
+    } else if (elicitation_method == "quartiles") {
+
+      conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
+
+        reactive({
+
+          # ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
+          #          f_cond_quartiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_q1[[eli_que_names[i]]], elici_q2[[eli_que_names[i]]], elici_q3[[eli_que_names[i]]]) < 2,
+          #        0,
+          #        1)
+
+          ifelse(sum(c(paste0("min",i),
+                       paste0("max",i),
+                       paste0("quartile1_",i),
+                       paste0("quartile2_",i),
+                       paste0("quartile3_",i)) %in% names(input))==5,
+                 ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
+                          elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
+                          elici_q1[[eli_que_names[i]]] == input[[paste0("quartile1_",i)]] &
+                          elici_q2[[eli_que_names[i]]] == input[[paste0("quartile2_",i)]] &
+                          elici_q3[[eli_que_names[i]]] == input[[paste0("quartile3_",i)]],
+                        1,0),
+                 0)
+        })
+
+      })
+
+    } else if (elicitation_method == "tertiles"){
+
+      conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
+
+        reactive({
+
+#           ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
+#                    f_cond_tertiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_t1[[eli_que_names[i]]], elici_t2[[eli_que_names[i]]]) < 2,
+#                  0,
+#                  1)
+
+          ifelse(sum(c(paste0("min",i),
+                       paste0("max",i),
+                       paste0("tertile1_",i),
+                       paste0("tertile2_",i)) %in% names(input)) == 4,
+                 ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
+                          elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
+                          elici_t1[[eli_que_names[i]]] == input[[paste0("tertile1_",i)]] &
+                          elici_t2[[eli_que_names[i]]] == input[[paste0("tertile2_",i)]],
+                        1,0),
+                 0)
+
+        })
+
+      })
+
+    }
+
+  } else {
+
+    conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
+
+      reactive({0})
+
+    })
+
+  }
+
+
+
+  names(conditions) <- paste0('que_', 1:tot_eli_ques)
+
   # when expert is ready to move onto next question - save answers and change tab
   lapply(X = 1:tot_eli_ques, FUN = function(i){
 
@@ -587,9 +796,9 @@ function (input, output, session) {
 
                     comments[[que_name]] <- input[[paste0("comment_", i)]]
 
-                    f_save_answers(comments[[que_name]],
-                                   paste0("que_",i,"_comment"),
-                                   paste0(buttons$expert_id,"_comment_que_",i,".csv"))
+                    f_save_answers(c(buttons$expert_id, comments[[que_name]]),
+                                   c("expert_id", paste0("que_", i, "_comment")),
+                                   paste0(buttons$expert_id, "_comment_que_", i, ".csv"))
 
                   }
 
@@ -614,22 +823,36 @@ function (input, output, session) {
 
           } else if (elicitation_method == "quartiles"){
 
-            # save most recent inputs as reactive values
-            elici_minis[[que_name]] <- input[[paste0("min",i)]]
-            elici_maxis[[que_name]] <- input[[paste0("max",i)]]
-            elici_q1[[que_name]] <- input[[paste0("quartile1_",i)]]
-            elici_q2[[que_name]] <- input[[paste0("quartile2_",i)]]
-            elici_q3[[que_name]] <- input[[paste0("quartile3_",i)]]
+            # check whether the expert has updated their summary statements before proceeding
+            if(sum(c(paste0("min",i),
+                     paste0("max",i),
+                     paste0("quartile1_",i),
+                     paste0("quartile1_",i),
+                     paste0("quartile1_",i)) %in% names(input))==5){
 
-            #check whether the plausible range is within parameter limits and elici_minis < elici_maxis
-            condition1 <- f_cond_min_max(elici_minis[[que_name]], elici_maxis[[que_name]], quant_limit_lower[i], quant_limit_upper[i])
+              if(elici_minis[[que_name]] == input[[paste0("min",i)]] &
+                 elici_maxis[[que_name]] == input[[paste0("max",i)]] &
+                 elici_q1[[que_name]] == input[[paste0("quartile1_",i)]] &
+                 elici_q2[[que_name]] == input[[paste0("quartile2_",i)]] &
+                 elici_q3[[que_name]] == input[[paste0("quartile3_",i)]]) {
 
-            # check whether quartiles are within plausible range and quartiles are in logical order
-            condition2 <- f_cond_quartiles(elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
+                condition3 <- 1
 
-            if(condition1 == 0 | condition2 == 0){
+              } else {
 
-              showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
+                condition3 <- 0
+
+              }
+
+              } else {
+
+              condition3 <- 0
+
+            }
+
+            if(condition3 == 0){
+
+              showModal(modalDialog (uiOutput (paste0("update_values_",i)), size="l"))
 
             } else {
 
@@ -656,9 +879,9 @@ function (input, output, session) {
 
                   comments[[que_name]] <- input[[paste0("comment_", i)]]
 
-                  f_save_answers(comments[[que_name]],
-                                 paste0("que_",i,"_comment"),
-                                 paste0(buttons$expert_id,"_comment_que_",i,".csv"))
+                  f_save_answers(c(buttons$expert_id, comments[[que_name]]),
+                                 c("expert_id", paste0("que_", i, "_comment")),
+                                 paste0(buttons$expert_id, "_comment_que_", i, ".csv"))
 
                 }
 
@@ -683,21 +906,33 @@ function (input, output, session) {
 
           } else if (elicitation_method == "tertiles"){
 
-            # save most recent inputs as reactive values
-            elici_minis[[que_name]] <- input[[paste0("min",i)]]
-            elici_maxis[[que_name]] <- input[[paste0("max",i)]]
-            elici_t1[[que_name]] <- input[[paste0("tertile1_",i)]]
-            elici_t2[[que_name]] <- input[[paste0("tertile2_",i)]]
+            if(sum(c(paste0("min",i),
+                     paste0("max",i),
+                     paste0("tertile1_",i),
+                     paste0("tertile1_",i)) %in% names(input))==4){
 
-            #check whether the plausible range is within parameter limits and elici_minis < elici_maxis
-            condition1 <- f_cond_min_max(elici_minis[[que_name]], elici_maxis[[que_name]], quant_limit_lower[i], quant_limit_upper[i])
+              if(elici_minis[[que_name]] == input[[paste0("min",i)]] &
+                 elici_maxis[[que_name]] == input[[paste0("max",i)]] &
+                 elici_t1[[que_name]] == input[[paste0("tertile1_",i)]] &
+                 elici_t2[[que_name]] == input[[paste0("tertile2_",i)]]) {
 
-            # check whether quartiles are within plausible range and tertiles are in logical order
-            condition2 <- f_cond_tertiles(elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
+                condition3 <- 1
 
-            if(condition1 == 0 | condition2 == 0){
+              } else {
 
-              showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
+                condition3 <- 0
+
+              }
+
+            } else {
+
+              condition3 <- 0
+
+            }
+
+            if(condition3 == 0){
+
+              showModal(modalDialog (uiOutput (paste0("update_values_",i)), size="l"))
 
             } else {
 
@@ -723,9 +958,9 @@ function (input, output, session) {
 
                   comments[[que_name]] <- input[[paste0("comment_", i)]]
 
-                  f_save_answers(comments[[que_name]],
-                                 paste0("que_",i,"_comment"),
-                                 paste0(buttons$expert_id,"_comment_que_",i,".csv"))
+                  f_save_answers(c(buttons$expert_id, comments[[que_name]]),
+                                 c("expert_id", paste0("que_", i, "_comment")),
+                                 paste0(buttons$expert_id, "_comment_que_", i, ".csv"))
 
                 }
 
@@ -753,6 +988,89 @@ function (input, output, session) {
 
     })
 
+if(save_method == "local"){
+
+  lapply(X = 1:tot_eli_ques, FUN = function(i){
+
+    output[[paste0("download_",i)]] <-
+
+      downloadHandler(
+
+        filename = paste0("download_all.csv"),
+        content = function(con) {
+
+          que_name <- eli_que_names[i]
+          temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
+
+          if(elicitation_method == "chips and bins"){
+
+            # save answers
+
+            temp2<-c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], chips_value[[que_name]], chips_chips[[que_name]])
+            save[[paste0("next_que_", i)]] <- temp2
+            save[[paste0("next_que_", i, "_colnames")]] <-   c("expert_id", paste0("que_",i,"_min"), paste0("que_",i,"_max"),
+                                                               paste0("que_",i,"_bins_",1:((length(temp2)-2)/2)),
+                                                               paste0("que_",i,"_chip_",1:((length(temp2)-2)/2)))
+
+          } else if (elicitation_method == "quartiles") {
+
+            # elici_minis[[que_name]] <- input[[paste0("min",i)]]
+            # elici_maxis[[que_name]] <- input[[paste0("max",i)]]
+            # elici_q1[[que_name]] <- input[[paste0("quartile1_",i)]]
+            # elici_q2[[que_name]] <- input[[paste0("quartile2_",i)]]
+            # elici_q3[[que_name]] <- input[[paste0("quartile3_",i)]]
+
+            temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
+            save[[paste0("next_que_", i)]] <- temp1
+            save[[paste0("next_que_", i, "_colnames")]] <- c("expert_id",
+                                                             paste0("que_",i,"_min"),
+                                                             paste0("que_",i,"_max"),
+                                                             paste0("que_",i,"_lower_quartile"),
+                                                             paste0("que_",i,"_median"),
+                                                             paste0("que_",i,"_upper_quartile"))
+
+
+          } else {
+
+            # # save most recent inputs as reactive values
+            # elici_minis[[que_name]] <- input[[paste0("min",i)]]
+            # elici_maxis[[que_name]] <- input[[paste0("max",i)]]
+            # elici_t1[[que_name]] <- input[[paste0("tertile1_",i)]]
+            # elici_t2[[que_name]] <- input[[paste0("tertile2_",i)]]
+
+            temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
+            save[[paste0("next_que_", i)]] <- temp1
+            save[[paste0("next_que_", i, "_colnames")]] <- c("expert_id",
+                                                             paste0("que_",i,"_min"),
+                                                             paste0("que_",i,"_max"),
+                                                             paste0("que_",i,"_lower_tertile"),
+                                                             paste0("que_",i,"_upper_tertile"))
+
+
+          }
+
+
+          if(paste0("comment_", i)%in%names(input)){
+            if(input[[paste0("comment_", i)]]!=""){
+              save[[paste0("next_que_", i)]] <- c(save[[paste0("next_que_", i)]],input[[paste0("comment_", i)]])
+              save[[paste0("next_que_", i, "_colnames")]] <-   c(save[[paste0("next_que_", i, "_colnames")]], paste0("comment_", i))
+            }
+          }
+
+          save[["all_answers"]] <- c(save[["all_answers"]], save[[paste0("next_que_", i)]])
+          save[["all_answers_colnames"]] <- c(save[["all_answers_colnames"]], save[[paste0("next_que_", i, "_colnames")]])
+
+          data <- t(save[["all_answers"]])
+          colnames(data) <- save[["all_answers_colnames"]]
+          write.csv(data, con)
+
+          }
+
+      )
+
+    })
+
+}
 
   # when an expert finishes training
 
@@ -804,24 +1122,24 @@ function (input, output, session) {
         tagList(div(
           strong("Please make sure you've entered the minimum and the
              maximum, that both values are between ", quant_limit_lower[i],
-                 " and ", quant_limit_upper[i],
-                 ", and that the minimum is lower than the maximum.")
+                 " and ", paste0(quant_limit_upper[i],
+                 ", and that the minimum is lower than the maximum."))
         ))
 
       } else if (!is.na(quant_limit_lower[i])) {
 
         tagList(div(
           strong("Please make sure you've entered the minimum and the
-             maximum, that both values are greater than ", quant_limit_lower[i],
-                 ", and that the minimum is lower than the maximum.")
+             maximum, that both values are greater than ", paste0(quant_limit_lower[i],
+                 ", and that the minimum is lower than the maximum."))
         ))
 
       } else if (!is.na(quant_limit_upper[i])) {
 
         tagList(div(
           strong("Please make sure you've entered the minimum and the
-             maximum, that both values are less than ", quant_limit_upper[i],
-                 ", and that the minimum is lower than the maximum.")
+             maximum, that both values are less than ", paste0(quant_limit_upper[i],
+                 ", and that the minimum is lower than the maximum."))
         ))
 
       } else {
@@ -868,8 +1186,8 @@ function (input, output, session) {
           "Please make sure you've entered all quantities,
           that the minimum is lower than the maximum,
           that all three quartiles are between ",
-          elici_minis[[que_name]], " and ", elici_maxis[[que_name]],
-          ", and that your midpoint is between your lower and upper quartiles.")
+          elici_minis[[que_name]], " and ", paste0(elici_maxis[[que_name]],
+          ", and that your median is between your lower and upper quartiles."))
         ))
 
       } else if(elicitation_method == "tertiles"){
@@ -879,8 +1197,8 @@ function (input, output, session) {
           "Please make sure you've entered all quantities,
           that the minimum is lower than the maximum,
           that both tertiles are between ",
-          elici_minis[[que_name]], " and ", elici_maxis[[que_name]],
-          ", and that your lower tertile is less than your upper tertile.")
+          elici_minis[[que_name]], " and ", paste0(elici_maxis[[que_name]],
+          ", and that your lower tertile is less than your upper tertile."))
         ))
 
       }
@@ -889,6 +1207,20 @@ function (input, output, session) {
     })
 
   })
+
+  lapply(X = 0:tot_eli_ques, FUN = function(i){
+
+    output[[paste0("update_values_",i)]]<-renderUI({
+
+      tagList(div(strong(
+        "The summary statements do not represent the values entered in the cells above.",
+        br(), br(),
+        "Please update the summary statements by clicking on 'Update values' before saving your answers."
+        )))
+
+    })
+  }
+  )
 
   output$end_of_exercise <- renderUI({
 
@@ -955,11 +1287,22 @@ function (input, output, session) {
 
     output[[paste0("quart_fig_",i)]]<- renderPlot({
 
-      f_quartile_figure(elici_minis[[que_name]],
-                        elici_maxis[[que_name]],
-                        elici_q1[[que_name]],
-                        elici_q2[[que_name]],
-                        elici_q3[[que_name]])
+      if(length(elici_q1[[que_name]])==0 | length(elici_q2[[que_name]])==0 |length(elici_q3[[que_name]])==0){
+
+        par(mar=c(2,0,2,0), bty="n")
+        plot(c(10, 20), c(-1,2), type="n",
+             ylim = c(0, 1),  ylab = "", yaxt = "n",
+             xlim = c(10, 20), xlab = "", xaxt = "n")
+
+      } else {
+
+              f_quartile_figure(elici_minis[[que_name]],
+                                elici_maxis[[que_name]],
+                                elici_q1[[que_name]],
+                                elici_q2[[que_name]],
+                                elici_q3[[que_name]])
+
+      }
 
     }, height = 70, width = 600)
 
@@ -977,10 +1320,21 @@ function (input, output, session) {
 
     output[[paste0("terts_fig_",i)]]<- renderPlot({
 
+      if(length(elici_t1[[que_name]])==0 | length(elici_t2[[que_name]])==0){
+
+        par(mar=c(2,0,2,0), bty="n")
+        plot(c(10, 20), c(-1,2), type="n",
+             ylim = c(0, 1),  ylab = "", yaxt = "n",
+             xlim = c(10, 20), xlab = "", xaxt = "n")
+
+      } else {
+
       f_tertile_figure(elici_minis[[que_name]],
                         elici_maxis[[que_name]],
                         elici_t1[[que_name]],
                         elici_t2[[que_name]])
+
+    }
 
     }, height = 70, width = 600)
 
@@ -997,15 +1351,29 @@ function (input, output, session) {
       if (buttons$enter_unique_id == 0){
 
         tagList(div(br(),
-                    "Please enter the unique identifier you've been provided, then click on 'Enter'.",
-                    br(),
-                    fluidRow(
-                      column(3, numericInput("expert_id", "", NULL, min = 0)),
-                      br(),column(1, offset = 6, actionButton("enter_unique_id", "Enter", width='120px', style="background-color: lightgrey"))
-                    ),
+                    if(save_method == "local" & buttons$enter_previous_responses == 0){
+                      p(strong("Is this the first time you are completing this exercise?"),
+                        radioButtons("radio_previous_responses", "", choices = c("Yes" = 1, "No" = 2), selected = 1),
+                        column(1, offset = 9, actionButton("enter_previous_responses", "Enter", width='120px', style="background-color: lightgrey"))
+                      )} else if (save_method == "local" & buttons$enter_previous_responses == 1 & buttons$radio_previous_responses == 2) {
+                      p("Please load your previous answers by clicking on 'Browse' and selecting
+                        the most recent saved file, then click on enter to continue.", br(), br(),
+                        "Note that you must load the correct file, or your previous answers won't be retrieved.",
+                        fluidRow(
+                          column(3, fileInput("load_past_answers", "", accept = ".csv", width ='360px')),br(),
+                          column(1, offset = 6, actionButton("get_previous_responses", "Enter", width='120px', style="background-color: lightgrey"))
+                        ))
+                      } else {
+                        p(strong("Please enter the unique identifier you've been provided, then click on 'Enter'."), br(),
+                          fluidRow(
+                            column(3, numericInput("expert_id", "", NULL, min = 0)),br(),
+                            column(1, offset = 6, actionButton("enter_unique_id", "Enter", width='120px', style="background-color: lightgrey"))
+                            )
+                        )
+                        },
                     br(), br()))
 
-      } else if (buttons$next_home == 0){
+        } else if (buttons$next_home == 0){
 
         tagList(div(includeHTML("www/text_home.htm"), br(),
                     fluidRow(
@@ -1103,12 +1471,11 @@ function (input, output, session) {
                  )),#close text for chips and bins
                ifelse(elicitation_method=="quartiles",
                       tagList(div(
-                        #tags$iframe(seamless="seamless", src= "www/text_instructions_quartiles.htm", width=800, height=800),
                         includeHTML("www/text_instructions_quartiles.htm"),
                         br(),hr(),br(),
-                        fluidRow(column(10,p("Can you determine a value ", strong("(your median or midpoint, M)"), " such that the proportion is equally likely to be less than or greater than this value?"),br(),
-                                        p("Suppose you were told that the proportion is below your assessed midpoint. Can you now provide a new value ", strong("(your lower quartile Q1)"), ", so that the proportion of patients is equally likely to be less than or greater than this value?"),br(),
-                                        p("Suppose you were told that the proportion is above your assessed midpoint. Can you now provide a new value ", strong("(your upper quartile Q3)"), ", so that the proportion of patients is equally likely to be less than or greater than this value?"),br()),
+                        fluidRow(column(10,p("Can you determine a value ", strong("(your median, M)"), " such that the proportion is equally likely to be less than or greater than this value?"),br(),
+                                        p("Suppose you were told that the proportion is below your assessed median. Can you now provide a new value ", strong("(your lower quartile Q1)", .noWS = c('after')), ", so that the proportion of patients is equally likely to be less than or greater than this value?"), br(),
+                                        p("Suppose you were told that the proportion is above your assessed median. Can you now provide a new value ", strong("(your upper quartile Q3)", .noWS = c('after')), ", so that the proportion of patients is equally likely to be less than or greater than this value?"), br()),
                                  column(2,numericInput("quartile2_0", NULL, elici_q2$test, min = elici_minis$test, max = elici_maxis$test), br(), br(),
                                         numericInput("quartile1_0", NULL, elici_q1$test, min = elici_minis$test, max = elici_maxis$test), br(), br(),
                                         numericInput("quartile3_0", NULL, elici_q3$test, min = elici_minis$test, max = elici_maxis$test), br())
@@ -1145,9 +1512,9 @@ function (input, output, session) {
                         includeHTML("www/text_instructions_tertiles.htm"),
                         br(),hr(),br(),
                         "Can you provide two values within your plausible range that divide the range of values into three equally likely intervals?", br(),br(),
-                        fluidRow(column(4,p("Value 1 ", strong("(lower tertile)"),":")),
+                        fluidRow(column(4,p("Value 1 ", strong("(your lower tertile)"),":")),
                                  column(3, numericInput("tertile1_0", NULL, elici_t1$test, min = 0, max = elici_maxis$test))), br(),
-                        fluidRow(column(4,p("Value 2 ", strong("(upper tertile)"),":")),
+                        fluidRow(column(4,p("Value 2 ", strong("(your upper tertile)"),":")),
                                  column(3, numericInput("tertile2_0", NULL, elici_t2$test, min = 0, max = elici_maxis$test))), br(),
                         br(),
                         HTML("<div style='height: 70px;width: 600px'>"),
@@ -1244,7 +1611,8 @@ function (input, output, session) {
                            chips_rbins[[que_name]],
                            show_plot[[que_name]],
                            enter_plot[[que_name]],
-                           comments[[que_name]]
+                           comments[[que_name]],
+                           conditions[[que_name]]()
           )
 
         ))
@@ -1261,7 +1629,8 @@ function (input, output, session) {
                       elici_q3[[que_name]],
                       enter_min_max[[que_name]],
                       enter_quarts[[que_name]],
-                      comments[[que_name]]
+                      comments[[que_name]],
+                      conditions[[que_name]]()
           )
 
         ))
@@ -1277,7 +1646,8 @@ function (input, output, session) {
                      elici_t2[[que_name]],
                      enter_min_max[[que_name]],
                      enter_terts[[que_name]],
-                     comments[[que_name]]
+                     comments[[que_name]],
+                     conditions[[que_name]]()
           )
 
         ))
@@ -1332,7 +1702,7 @@ function (input, output, session) {
                                                    ))
                                               } else {
                                                 uiOutput(paste0("eli_question_",i))
-                                                }
+                                              }
 
                                           )
 
