@@ -4,7 +4,6 @@ source("functions.R", local = TRUE)
 source("elicitation_questions_ui.R", local = TRUE)
 source("about_you.R", local = TRUE)
 
-
 function (input, output, session) {
 
   ##### create reactive values #####

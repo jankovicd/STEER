@@ -8,7 +8,7 @@ all_expert_ids <- c(1111, 2222, 3333, 4444, 5555, 6666, 1234)
 # the numbers provided above are just examples.
 
 #b)
-include_consent <- FALSE
+include_consent <- TRUE
 # to include the consent form in the app, set to TRUE, otherwise FALSE.
 # the form can be edited by editing "text_home.htm" file in the "www" folder of the app.
 
@@ -19,7 +19,7 @@ n_about_you <- 2
 # the number of questions about experts in the "about_you.R" file.
 
 #d)
-elicitation_method <- "quartiles"
+elicitation_method <- "chips and bins"
 # set to "chips and bins", "quartiles" or "tertiles"
 # note that chips and bins are sometimes referred to as roulette or histogram, while
 # quartiles is sometimes referred to as bisection.

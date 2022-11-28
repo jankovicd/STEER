@@ -9,6 +9,12 @@ eli_que_names <- paste0("que_",1:tot_eli_ques)
 # to determine when to skip to the next tab
 last_home_page <- 1 + include_consent + include_about_you
 
+if(!exists("dummy_app")){ # if dummy_app doesn't exist (e.g. when deploying the app) assume the app is live
+
+  dummy_app <- FALSE
+
+}
+
 ########## functions ##########
 
 ###### elicitation ######
@@ -392,7 +398,9 @@ f_cond_tertiles <- function(elici_minis, elici_maxis, elici_t1, elici_t2) {
 
 ####### saving functions #######
 
-#required for connection to dropbox
+if(save_method == "dropbox") {
+
+  #required for connection to dropbox
 token <- if(file.exists("droptoken.rds")){readRDS("droptoken.rds")}else{NULL}
 drop_acc(dtoken = token)
 if(file.exists("droptoken.rds")){token$refresh()}else{NULL}
@@ -465,6 +473,9 @@ f_load_answers <- function(unique_id) {
 
     }
 }
+
+}
+
 
 
 
