@@ -19,7 +19,7 @@ n_about_you <- 2
 # the number of questions about experts in the "about_you.R" file.
 
 #d)
-elicitation_method <- "quartiles"
+elicitation_method <- "chips and bins"
 # set to "chips and bins", "quartiles" or "tertiles"
 # note that chips and bins are sometimes referred to as roulette or histogram, while
 # quartiles is sometimes referred to as bisection.
