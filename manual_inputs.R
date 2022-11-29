@@ -13,13 +13,13 @@ include_consent <- TRUE
 # the form can be edited by editing "text_home.htm" file in the "www" folder of the app.
 
 #c)
-include_about_you <- FALSE
+include_about_you <- TRUE
 # to include questions about experts, set to TRUE, otherwise FALSE
 n_about_you <- 2
 # the number of questions about experts in the "about_you.R" file.
 
 #d)
-elicitation_method <- "chips and bins"
+elicitation_method <- "quartiles"
 # set to "chips and bins", "quartiles" or "tertiles"
 # note that chips and bins are sometimes referred to as roulette or histogram, while
 # quartiles is sometimes referred to as bisection.

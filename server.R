@@ -72,6 +72,7 @@ function (input, output, session) {
 
     buttons$expert_id <- 1111
     buttons$enter_unique_id <- 1
+    save$about_you_all <- 1111
 
   }
 
@@ -109,6 +110,8 @@ function (input, output, session) {
       enter_min_max[[i]] <- 0
       enter_quarts[[i]] <-0
 
+      buttons[[paste0("conditions_",i)]] <- 0
+
     } else if (elicitation_method == "tertiles"){
 
       elici_t1[[i]] <- integer(0)
@@ -116,6 +119,8 @@ function (input, output, session) {
 
       enter_min_max[[i]] <- 0
       enter_terts[[i]] <-0
+
+      buttons[[paste0("conditions_",i)]] <- 0
 
     }
 
@@ -145,6 +150,21 @@ function (input, output, session) {
 
     buttons$expert_id <- previous_responses["expert_id"]
     buttons$enter_unique_id <- 1
+
+    save[["all_answers"]] <- previous_responses
+    save[["all_answers_colnames"]] <- colnames(previous_responses)
+
+    if(include_about_you){
+
+      about_you <- previous_responses[grep("about_you",colnames(previous_responses))]
+
+      if(length(about_you)>0){
+
+        save[["about_you_all"]] <- c(buttons$expert_id, as.numeric(previous_responses[grep("about_you_",colnames(previous_responses))]))
+        save[["about_you_colnames"]] <- c("expert_id", colnames(previous_responses)[grep("about_you_",colnames(previous_responses))])
+      }
+
+    }
 
     # check answers relating to elicitation
     temp1 <- colnames(previous_responses)[grep("_min",colnames(previous_responses))]
@@ -194,6 +214,8 @@ function (input, output, session) {
           enter_min_max[[que_name]] <- 1
           enter_quarts[[que_name]] <- 1
 
+          buttons[[paste0("conditions_",i)]] <- 1
+
         } else {
 
           elici_t1[[que_name]] <- unlist(previous_responses[paste0(que_name,"_lower_tertile")])
@@ -201,6 +223,8 @@ function (input, output, session) {
 
           enter_min_max[[que_name]] <- 1
           enter_terts[[que_name]] <- 1
+
+          buttons[[paste0("conditions_",i)]] <- 1
 
         }
 
@@ -364,6 +388,65 @@ function (input, output, session) {
   })
 
 
+  if(save_method == "local"){
+
+    output[["download_about_you"]] <-
+
+        downloadHandler(
+
+          filename = paste0("download_all.csv"),
+          content = function(con) {
+
+            temp <- buttons$next_home; buttons$next_home + 1
+            buttons$end_home <- 1
+            updateTabsetPanel(session, "top_tabs", selected = "Instructions")
+
+            for (i in 1:n_about_you){
+              # loop for saving all questions about experts
+
+              about_you_que <- paste0("about_you_",i)
+
+              if (about_you_que%in%names(input)){
+
+                if(!is.null(input[[about_you_que]])){
+
+                  save_about_you_que <- input[[about_you_que]]
+                  save_about_you_colnames <- rep(paste0("about_you_", i), length(save_about_you_que))
+
+                } else {
+
+                  save_about_you_que <- NA
+                  save_about_you_colnames <- paste0("about_you_", i)
+
+                }
+
+              } else {
+
+                save_about_you_que <- NA
+                save_about_you_colnames <- paste0("about_you_",i)
+
+              }
+
+              save[["about_you_all"]] <- c(save[["about_you_all"]], save_about_you_que)
+              save[["about_you_colnames"]] <- c(save[["about_you_colnames"]], save_about_you_colnames)
+
+            } #close for loop for "about you" questions
+
+            save[["all_answers"]] <- save[["about_you_all"]]
+            save[["all_answers_colnames"]] <- save[["about_you_colnames"]]
+
+            data <- t(save[["all_answers"]])
+            colnames(data) <- save[["all_answers_colnames"]]
+
+            # data <- t(save[["about_you_all"]])
+            # colnames(data) <- save[["about_you_colnames"]]
+            write.csv(data, con)
+
+          }
+
+        )
+
+    }
 
 
     observeEvent(input$next_home,{
@@ -394,6 +477,8 @@ function (input, output, session) {
       temp <- buttons$next_home; buttons$next_home <- temp + 1
 
     } else {
+
+      if(save_method == "dropbox"){
 
       for (i in 1:n_about_you){
 
@@ -428,6 +513,8 @@ function (input, output, session) {
       } #close for loop for "about you" questions
 
       f_save_answers(save[["about_you_all"]], save[["about_you_colnames"]], paste0(buttons$expert_id,"_about_you.csv"))
+
+    }
 
       temp <- buttons$next_home; buttons$next_home + 1
       buttons$end_home <- 1
@@ -578,7 +665,9 @@ function (input, output, session) {
 
         enter_quarts[[que_name]] <- 1
 
-      } else {
+        if(save_method == "local") { buttons[[paste0("conditions_",i)]] <- 1 }
+
+        } else {
 
         showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
 
@@ -640,6 +729,8 @@ function (input, output, session) {
 
         enter_terts[[que_name]] <- 1
 
+        if(save_method == "local") { buttons[[paste0("conditions_",i)]] <- 1 }
+
       } else {
 
         showModal(modalDialog (uiOutput (paste0("no_quantiles_",i)), size="l"))
@@ -676,9 +767,11 @@ function (input, output, session) {
 
   })
 
-  if(save_method == "local"){
+  # if(save_method == "local"){
+  #
+  #   if(elicitation_method == "chips and bins"){
 
-    if(elicitation_method == "chips and bins"){
+  if(save_method == "local" & elicitation_method == "chips and bins"){
 
       conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
 
@@ -691,60 +784,60 @@ function (input, output, session) {
 
       })
 
-    } else if (elicitation_method == "quartiles") {
-
-      conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
-
-        reactive({
-
-          # ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
-          #          f_cond_quartiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_q1[[eli_que_names[i]]], elici_q2[[eli_que_names[i]]], elici_q3[[eli_que_names[i]]]) < 2,
-          #        0,
-          #        1)
-
-          ifelse(sum(c(paste0("min",i),
-                       paste0("max",i),
-                       paste0("quartile1_",i),
-                       paste0("quartile2_",i),
-                       paste0("quartile3_",i)) %in% names(input))==5,
-                 ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
-                          elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
-                          elici_q1[[eli_que_names[i]]] == input[[paste0("quartile1_",i)]] &
-                          elici_q2[[eli_que_names[i]]] == input[[paste0("quartile2_",i)]] &
-                          elici_q3[[eli_que_names[i]]] == input[[paste0("quartile3_",i)]],
-                        1,0),
-                 0)
-        })
-
-      })
-
-    } else if (elicitation_method == "tertiles"){
-
-      conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
-
-        reactive({
-
-#           ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
-#                    f_cond_tertiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_t1[[eli_que_names[i]]], elici_t2[[eli_que_names[i]]]) < 2,
-#                  0,
-#                  1)
-
-          ifelse(sum(c(paste0("min",i),
-                       paste0("max",i),
-                       paste0("tertile1_",i),
-                       paste0("tertile2_",i)) %in% names(input)) == 4,
-                 ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
-                          elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
-                          elici_t1[[eli_que_names[i]]] == input[[paste0("tertile1_",i)]] &
-                          elici_t2[[eli_que_names[i]]] == input[[paste0("tertile2_",i)]],
-                        1,0),
-                 0)
-
-        })
-
-      })
-
-    }
+    # } else if (elicitation_method == "quartiles") {
+    #
+    #   conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
+    #
+    #     reactive({
+    #
+    #       # ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
+    #       #          f_cond_quartiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_q1[[eli_que_names[i]]], elici_q2[[eli_que_names[i]]], elici_q3[[eli_que_names[i]]]) < 2,
+    #       #        0,
+    #       #        1)
+    #
+    #       ifelse(sum(c(paste0("min",i),
+    #                    paste0("max",i),
+    #                    paste0("quartile1_",i),
+    #                    paste0("quartile2_",i),
+    #                    paste0("quartile3_",i)) %in% names(input))==5,
+    #              ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
+    #                       elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
+    #                       elici_q1[[eli_que_names[i]]] == input[[paste0("quartile1_",i)]] &
+    #                       elici_q2[[eli_que_names[i]]] == input[[paste0("quartile2_",i)]] &
+    #                       elici_q3[[eli_que_names[i]]] == input[[paste0("quartile3_",i)]],
+    #                     1,0),
+    #              0)
+    #     })
+    #
+    #   })
+#
+#     } else if (elicitation_method == "tertiles"){
+#
+#       conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
+#
+#         eventReactive(input[[paste0("enter_terts_",i)]],{
+#
+# #           ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
+# #                    f_cond_tertiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_t1[[eli_que_names[i]]], elici_t2[[eli_que_names[i]]]) < 2,
+# #                  0,
+# #                  1)
+#
+#           ifelse(sum(c(paste0("min",i),
+#                        paste0("max",i),
+#                        paste0("tertile1_",i),
+#                        paste0("tertile2_",i)) %in% names(input)) == 4,
+#                  ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
+#                           elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
+#                           elici_t1[[eli_que_names[i]]] == input[[paste0("tertile1_",i)]] &
+#                           elici_t2[[eli_que_names[i]]] == input[[paste0("tertile2_",i)]],
+#                         1,0),
+#                  0)
+#
+#         })
+#
+#       })
+#
+#     }
 
   } else {
 
@@ -755,8 +848,6 @@ function (input, output, session) {
     })
 
   }
-
-
 
   names(conditions) <- paste0('que_', 1:tot_eli_ques)
 
@@ -790,7 +881,7 @@ function (input, output, session) {
                                save[[paste0("next_que_", i, "_colnames")]],
                                paste0(buttons$expert_id,"_que_",i,".csv"))
 
-                if(paste0("comment_", i)%in%names(input)){
+                if(paste0("comment_", i) %in% names(input)){
 
                   if(input[[paste0("comment_", i)]]!=""){
 
@@ -1020,8 +1111,8 @@ if(save_method == "local"){
             # elici_q2[[que_name]] <- input[[paste0("quartile2_",i)]]
             # elici_q3[[que_name]] <- input[[paste0("quartile3_",i)]]
 
-            temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
-            save[[paste0("next_que_", i)]] <- temp1
+            temp2 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
+            save[[paste0("next_que_", i)]] <- temp2
             save[[paste0("next_que_", i, "_colnames")]] <- c("expert_id",
                                                              paste0("que_",i,"_min"),
                                                              paste0("que_",i,"_max"),
@@ -1038,8 +1129,8 @@ if(save_method == "local"){
             # elici_t1[[que_name]] <- input[[paste0("tertile1_",i)]]
             # elici_t2[[que_name]] <- input[[paste0("tertile2_",i)]]
 
-            temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
-            save[[paste0("next_que_", i)]] <- temp1
+            temp2 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
+            save[[paste0("next_que_", i)]] <- temp2
             save[[paste0("next_que_", i, "_colnames")]] <- c("expert_id",
                                                              paste0("que_",i,"_min"),
                                                              paste0("que_",i,"_max"),
@@ -1053,8 +1144,17 @@ if(save_method == "local"){
           if(paste0("comment_", i)%in%names(input)){
             if(input[[paste0("comment_", i)]]!=""){
               save[[paste0("next_que_", i)]] <- c(save[[paste0("next_que_", i)]],input[[paste0("comment_", i)]])
-              save[[paste0("next_que_", i, "_colnames")]] <-   c(save[[paste0("next_que_", i, "_colnames")]], paste0("comment_", i))
+              save[[paste0("next_que_", i, "_colnames")]] <-   c(save[[paste0("next_que_", i, "_colnames")]], paste0("que_",i,"_comment_"))
             }
+          }
+
+          outdated_answers <- grep(paste0("que_",i),save[["all_answers_colnames"]])
+
+          if(length(outdated_answers)>0){
+
+            save[["all_answers"]] <- save[["all_answers"]][-outdated_answers]
+            save[["all_answers_colnames"]] <- save[["all_answers_colnames"]][-outdated_answers]
+
           }
 
           save[["all_answers"]] <- c(save[["all_answers"]], save[[paste0("next_que_", i)]])
@@ -1396,10 +1496,18 @@ if(save_method == "local"){
 
         tagList(div(
           about_you_ques, br(),
-          fluidRow(
-            column(9, p(style="font-size:90%;", "Please click on 'Next' to continue")),
-            column(1, actionButton("next_home", "Save", width='120px', style="background-color: lightgrey"))
+          if(save_method == "dropbox"){
+            fluidRow(
+              column(9, p(style="font-size:90%;", "Please click on 'Next' to continue")),
+              column(1, actionButton("next_home", "Save", width='120px', style="background-color: lightgrey"))
           )
+          } else {
+            fluidRow(
+              column(9, p(style="font-size:90%;", "Please click on 'Next' to continue")),
+              column(1, downloadButton("download_about_you", "Save", width='120px', style="background-color: lightgrey"))
+            )
+          }
+
         ))
 
       } else {
@@ -1630,7 +1738,7 @@ if(save_method == "local"){
                       enter_min_max[[que_name]],
                       enter_quarts[[que_name]],
                       comments[[que_name]],
-                      conditions[[que_name]]()
+                      buttons[[paste0("conditions_",i)]]
           )
 
         ))
@@ -1647,7 +1755,7 @@ if(save_method == "local"){
                      enter_min_max[[que_name]],
                      enter_terts[[que_name]],
                      comments[[que_name]],
-                     conditions[[que_name]]()
+                     buttons[[paste0("conditions_",i)]]
           )
 
         ))
