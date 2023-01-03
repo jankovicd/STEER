@@ -23,8 +23,7 @@ if(!exists("dummy_app")){ # if dummy_app doesn't exist (e.g. when deploying the 
 
 # options for bin width in Chips and Bins plots
 # used by f_width function to creaste chips_width reactive values
-bins <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.5,
-          1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
+bins <- c(1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
 
 # derives the bins width from expert's plausible range (elicit_minis and elici_maxis)
 f_width <- function(elici_minis, elici_maxis, bins)

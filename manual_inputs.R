@@ -8,7 +8,7 @@ all_expert_ids <- c(1111, 2222, 3333, 4444, 5555, 6666, 1234)
 # the numbers provided above are just examples.
 
 #b)
-include_consent <- TRUE
+include_consent <- FALSE
 # to include the consent form in the app, set to TRUE, otherwise FALSE.
 # the form can be edited by editing "text_home.htm" file in the "www" folder of the app.
 

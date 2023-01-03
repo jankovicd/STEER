@@ -394,7 +394,7 @@ function (input, output, session) {
 
         downloadHandler(
 
-          filename = paste0("download_all.csv"),
+          filename = paste0(buttons$expert_id,"_download_all.csv"),
           content = function(con) {
 
             temp <- buttons$next_home; buttons$next_home + 1
@@ -1087,7 +1087,7 @@ if(save_method == "local"){
 
       downloadHandler(
 
-        filename = paste0("download_all.csv"),
+        filename = paste0(buttons$expert_id,"_download_all.csv"),
         content = function(con) {
 
           que_name <- eli_que_names[i]
