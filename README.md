@@ -148,3 +148,18 @@ With the variable interval methods, the feedback includes comparison of differen
 
 Experts are then asked to provide rationale for their answers, and save them. Experts can also edit and re-save their answers at any point in the exercise.
 
+# Analysis code
+
+The R code includes files required to analyse elicitation responses collected using the STEER Shiny app. 
+
+Once all relevant files are aggregated in the relevant folder, the code fits distributions of choice (normal, log normal, beta, gamma) to experts’ priors using SHELF fitdist function (7) and produces aggregate distributions with equal weighting. The code saves tables of experts’ individual and pooled distribution parameters, as well as plots comparing fitted distributions with experts’ quantiles and plots comparing individual with aggregate probability distributions for each elicitation question.
+
+To run the analysis: 
+* Save all elicitation responses in one folder (“analysis_files/experts_responses” in the project folder).
+* Open the analysis_code.R file from RStudio.
+* Select which distributions to fit in each elicitation question by setting the “dist_per_question” object.
+* Run the code
+* Read the results in the “analysis_files/experts_responses” folder in the project folder.
+
+The code is open source and can be edited to add further options (such as multiple distributions per elicitation question, or fitting additional parametric distributions).
+
