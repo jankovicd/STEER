@@ -1512,7 +1512,7 @@ if(save_method == "local"){
 
       } else {
 
-        "Thank you. You may proceed to the 'Instrcutions' tab"
+        "Thank you. You may proceed to the 'Instructions' tab"
 
       }
 
