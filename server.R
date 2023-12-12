@@ -1737,10 +1737,7 @@ if(save_method == "local"){
                                                    " and saved your answers in order to proceed.")
                                                    ))
                                               } else {
-                                                tagList(div(
-                                                  buttons$que_no,
                                                 uiOutput(paste0("eli_question_",i))
-                                                ))
                                               }
 
                                           )
