@@ -156,7 +156,7 @@ Once all relevant files are aggregated in the relevant folder, the code fits dis
 
 To run the analysis: 
 * Save all elicitation responses in one folder (“analysis_files/experts_responses” in the project folder).
-* Make sure that files with experts' responses are be named in the following format: expertID_doanload_all.csv (where expertID is the expert's unique ID)
+* Name all files with experts' responses in the following format: expertID_doanload_all.csv (where expertID is the expert's unique ID)
 * Open the analysis_code.R file from RStudio.
 * Select which distributions to fit in each elicitation question by setting the “dist_per_question” object.
 * Run the code
