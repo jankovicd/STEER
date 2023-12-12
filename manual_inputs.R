@@ -54,9 +54,7 @@ quant_limit_upper <- c(100, NA, 50)
 eli_que_text <- c(
   "What proportion of patients will respond to drug A after 3 months of treatment?",
   "How long will it take for Drug A to start working?",
-  "How much does Drug A reduce HbA1C after three months of treatment?",
-  "If after 3 months of treatment Drug B is 1.6 times more effective than Drug A (i.e. relative risk = 1.6),
-  how much more effective is Drug B after 6 months of treatment?"
+  "How much does Drug A reduce HbA1C after three months of treatment?"
 )
 #length should be the same as "quantity", "units", "quant_limit_lower" and "quant_limit_upper"
 
