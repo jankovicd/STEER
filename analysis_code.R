@@ -4,6 +4,8 @@ library(dplyr)
 
 rm(list = ls())
 
+# files with experts' responses must be named in the following format:
+# expertID_doanload_all.csv
 folder_with_responses <- "analysis_files/experts_responses" # name of folder where experts' answers are saved (should be in the working directory)
 
 source("manual_inputs.R")

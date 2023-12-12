@@ -14,17 +14,17 @@ xmlns="http://www.w3.org/TR/REC-html40">
  <o:DocumentProperties>
   <o:Author>Dina Jankovic</o:Author>
   <o:LastAuthor>Dina Jankovic</o:LastAuthor>
-  <o:Revision>1</o:Revision>
-  <o:TotalTime>2</o:TotalTime>
-  <o:Created>2022-02-09T14:50:00Z</o:Created>
-  <o:LastSaved>2022-02-09T14:52:00Z</o:LastSaved>
+  <o:Revision>2</o:Revision>
+  <o:TotalTime>1</o:TotalTime>
+  <o:Created>2023-11-22T11:56:00Z</o:Created>
+  <o:LastSaved>2023-11-22T11:56:00Z</o:LastSaved>
   <o:Pages>1</o:Pages>
-  <o:Words>64</o:Words>
+  <o:Words>79</o:Words>
   <o:Characters>369</o:Characters>
   <o:Company>University of York</o:Company>
   <o:Lines>3</o:Lines>
   <o:Paragraphs>1</o:Paragraphs>
-  <o:CharactersWithSpaces>432</o:CharactersWithSpaces>
+  <o:CharactersWithSpaces>447</o:CharactersWithSpaces>
   <o:Version>16.00</o:Version>
  </o:DocumentProperties>
  <o:OfficeDocumentSettings>
@@ -59,6 +59,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
    <w:DontFlipMirrorIndents/>
    <w:OverrideTableStyleHps/>
   </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
   <m:mathPr>
    <m:mathFont m:val="Cambria Math"/>
    <m:brkBin m:val="before"/>
@@ -75,7 +76,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
 </xml><![endif]--><!--[if gte mso 9]><xml>
  <w:LatentStyles DefLockedState="false" DefUnhideWhenUsed="false"
   DefSemiHidden="false" DefQFormat="false" DefPriority="99"
-  LatentStyleCount="371">
+  LatentStyleCount="375">
   <w:LsdException Locked="false" Priority="0" QFormat="true" Name="Normal"/>
   <w:LsdException Locked="false" Priority="9" QFormat="true" Name="heading 1"/>
   <w:LsdException Locked="false" Priority="9" SemiHidden="true"
@@ -640,6 +641,14 @@ xmlns="http://www.w3.org/TR/REC-html40">
    Name="List Table 6 Colorful Accent 6"/>
   <w:LsdException Locked="false" Priority="52"
    Name="List Table 7 Colorful Accent 6"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Mention"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Smart Hyperlink"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Hashtag"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Unresolved Mention"/>
  </w:LatentStyles>
 </xml><![endif]-->
 <style>
@@ -648,10 +657,10 @@ xmlns="http://www.w3.org/TR/REC-html40">
  @font-face
 	{font-family:"Cambria Math";
 	panose-1:2 4 5 3 5 4 6 3 2 4;
-	mso-font-charset:1;
+	mso-font-charset:0;
 	mso-generic-font-family:roman;
 	mso-font-pitch:variable;
-	mso-font-signature:0 0 0 0 0 0;}
+	mso-font-signature:3 0 0 0 1 0;}
 @font-face
 	{font-family:Calibri;
 	panose-1:2 15 5 2 2 2 4 3 2 4;
@@ -711,7 +720,8 @@ h1
 	mso-fareast-language:EN-US;
 	mso-bidi-font-weight:normal;}
 h2
-	{mso-style-priority:9;
+	{mso-style-noshow:yes;
+	mso-style-priority:9;
 	mso-style-qformat:yes;
 	mso-style-link:"Heading 2 Char";
 	mso-style-next:Normal;
@@ -740,7 +750,8 @@ h2
 	mso-fareast-language:EN-US;
 	mso-bidi-font-weight:normal;}
 h3
-	{mso-style-priority:9;
+	{mso-style-noshow:yes;
+	mso-style-priority:9;
 	mso-style-qformat:yes;
 	mso-style-link:"Heading 3 Char";
 	mso-style-next:Normal;
@@ -767,7 +778,8 @@ h3
 	mso-themecolor:text1;
 	mso-fareast-language:EN-US;}
 h4
-	{mso-style-priority:9;
+	{mso-style-noshow:yes;
+	mso-style-priority:9;
 	mso-style-qformat:yes;
 	mso-style-link:"Heading 4 Char";
 	mso-style-next:Normal;
@@ -796,6 +808,7 @@ h4
 	text-underline:single;}
 p.MsoCaption, li.MsoCaption, div.MsoCaption
 	{mso-style-update:auto;
+	mso-style-noshow:yes;
 	mso-style-priority:35;
 	mso-style-qformat:yes;
 	mso-style-next:Normal;
@@ -825,8 +838,10 @@ span.Heading1Char
 	mso-ansi-font-size:16.0pt;
 	mso-bidi-font-size:16.0pt;
 	font-family:"Times New Roman",serif;
+	mso-ascii-font-family:"Times New Roman";
 	mso-fareast-font-family:"Times New Roman";
 	mso-fareast-theme-font:major-fareast;
+	mso-hansi-font-family:"Times New Roman";
 	mso-bidi-font-family:"Times New Roman";
 	mso-bidi-theme-font:major-bidi;
 	color:black;
@@ -835,6 +850,7 @@ span.Heading1Char
 	mso-bidi-font-weight:normal;}
 span.Heading2Char
 	{mso-style-name:"Heading 2 Char";
+	mso-style-noshow:yes;
 	mso-style-priority:9;
 	mso-style-unhide:no;
 	mso-style-locked:yes;
@@ -842,8 +858,10 @@ span.Heading2Char
 	mso-ansi-font-size:14.0pt;
 	mso-bidi-font-size:13.0pt;
 	font-family:"Times New Roman",serif;
+	mso-ascii-font-family:"Times New Roman";
 	mso-fareast-font-family:"Times New Roman";
 	mso-fareast-theme-font:major-fareast;
+	mso-hansi-font-family:"Times New Roman";
 	mso-bidi-font-family:"Times New Roman";
 	mso-bidi-theme-font:major-bidi;
 	color:black;
@@ -852,6 +870,7 @@ span.Heading2Char
 	mso-bidi-font-weight:normal;}
 span.Heading3Char
 	{mso-style-name:"Heading 3 Char";
+	mso-style-noshow:yes;
 	mso-style-priority:9;
 	mso-style-unhide:no;
 	mso-style-locked:yes;
@@ -870,6 +889,7 @@ span.Heading3Char
 	font-weight:bold;}
 span.Heading4Char
 	{mso-style-name:"Heading 4 Char";
+	mso-style-noshow:yes;
 	mso-style-priority:9;
 	mso-style-unhide:no;
 	mso-style-locked:yes;
@@ -887,15 +907,27 @@ span.Heading4Char
 	mso-bidi-font-style:italic;
 	text-decoration:underline;
 	text-underline:single;}
-span.SpellE
-	{mso-style-name:"";
-	mso-spl-e:yes;}
+p.msonormal0, li.msonormal0, div.msonormal0
+	{mso-style-name:msonormal;
+	mso-style-unhide:no;
+	mso-margin-top-alt:auto;
+	margin-right:0cm;
+	mso-margin-bottom-alt:auto;
+	margin-left:0cm;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;
+	mso-fareast-font-family:"Times New Roman";
+	mso-fareast-theme-font:minor-fareast;}
 span.GramE
 	{mso-style-name:"";
 	mso-gram-e:yes;}
 .MsoChpDefault
 	{mso-style-type:export-only;
 	mso-default-props:yes;
+	font-size:10.0pt;
+	mso-ansi-font-size:10.0pt;
+	mso-bidi-font-size:10.0pt;
 	font-family:"Calibri",sans-serif;
 	mso-ascii-font-family:Calibri;
 	mso-ascii-theme-font:minor-latin;
@@ -906,10 +938,6 @@ span.GramE
 	mso-bidi-font-family:"Times New Roman";
 	mso-bidi-theme-font:minor-bidi;
 	mso-fareast-language:EN-US;}
-.MsoPapDefault
-	{mso-style-type:export-only;
-	margin-bottom:8.0pt;
-	line-height:107%;}
 @page WordSection1
 	{size:595.3pt 841.9pt;
 	margin:72.0pt 72.0pt 72.0pt 72.0pt;
@@ -931,13 +959,10 @@ div.WordSection1
 	mso-style-priority:99;
 	mso-style-parent:"";
 	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
-	mso-para-margin-top:0cm;
-	mso-para-margin-right:0cm;
-	mso-para-margin-bottom:8.0pt;
-	mso-para-margin-left:0cm;
-	line-height:107%;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
 	mso-pagination:widow-orphan;
-	font-size:11.0pt;
+	font-size:10.0pt;
 	font-family:"Calibri",sans-serif;
 	mso-ascii-font-family:Calibri;
 	mso-ascii-theme-font:minor-latin;
@@ -965,15 +990,15 @@ style='font-size:13.0pt;line-height:150%'>Your data<o:p></o:p></span></b></p>
 <p class=MsoNormal>Before we start, please fill in the consent form below.</p>
 
 <p class=MsoNormal>We will be collecting data from you today. All the data we
-keep <span class=GramE>will be anonymised</span>. Data will be stored for up to
-2 year in a secure folder on a networked computer.</p>
+keep will be anonymised. Data will be stored for up to 2 year in a secure
+folder on a networked computer.</p>
 
-<p class=MsoNormal>The anonymised data will be analysed, and results <span
-class=GramE>may be presented at conferences and disseminated in peer-reviewed
-publications</span>.</p>
+<p class=MsoNormal>The anonymised data will be analysed, and results may be
+presented at conferences and disseminated in peer-reviewed publications.</p>
 
-<p class=MsoNormal>Do you consent for us to use your data for the
-abovementioned purposes?<o:p></o:p></p>
+<p class=MsoNormal><b style='mso-bidi-font-weight:normal'>By using this <span
+class=GramE>app</span> you consent for us to use your data for the
+abovementioned purposes.<o:p></o:p></b></p>
 
 </div>
 

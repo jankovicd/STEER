@@ -237,8 +237,6 @@ function (input, output, session) {
       buttons$que_no <- answered_questions[length(answered_questions)] + 1
 
       updateTabsetPanel(session, "top_tabs", selected = "Questions")
-      updateTabsetPanel(session, "question_tabs", selected = paste0("Question ", buttons$que_no))
-
 
     } else {
 
@@ -347,8 +345,6 @@ function (input, output, session) {
             buttons$que_no <- answered_questions[length(answered_questions)] + 1
 
             updateTabsetPanel(session, "top_tabs", selected = "Questions")
-            updateTabsetPanel(session, "question_tabs", selected = paste0("Question ", buttons$que_no))
-
 
           } else {
 
@@ -767,10 +763,6 @@ function (input, output, session) {
 
   })
 
-  # if(save_method == "local"){
-  #
-  #   if(elicitation_method == "chips and bins"){
-
   if(save_method == "local" & elicitation_method == "chips and bins"){
 
       conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
@@ -783,61 +775,6 @@ function (input, output, session) {
         })
 
       })
-
-    # } else if (elicitation_method == "quartiles") {
-    #
-    #   conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
-    #
-    #     reactive({
-    #
-    #       # ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
-    #       #          f_cond_quartiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_q1[[eli_que_names[i]]], elici_q2[[eli_que_names[i]]], elici_q3[[eli_que_names[i]]]) < 2,
-    #       #        0,
-    #       #        1)
-    #
-    #       ifelse(sum(c(paste0("min",i),
-    #                    paste0("max",i),
-    #                    paste0("quartile1_",i),
-    #                    paste0("quartile2_",i),
-    #                    paste0("quartile3_",i)) %in% names(input))==5,
-    #              ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
-    #                       elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
-    #                       elici_q1[[eli_que_names[i]]] == input[[paste0("quartile1_",i)]] &
-    #                       elici_q2[[eli_que_names[i]]] == input[[paste0("quartile2_",i)]] &
-    #                       elici_q3[[eli_que_names[i]]] == input[[paste0("quartile3_",i)]],
-    #                     1,0),
-    #              0)
-    #     })
-    #
-    #   })
-#
-#     } else if (elicitation_method == "tertiles"){
-#
-#       conditions <- lapply(X = 1:tot_eli_ques, FUN = function(i){
-#
-#         eventReactive(input[[paste0("enter_terts_",i)]],{
-#
-# #           ifelse(f_cond_min_max(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], quant_limit_lower[i], quant_limit_upper[i]) +
-# #                    f_cond_tertiles(elici_minis[[eli_que_names[i]]], elici_maxis[[eli_que_names[i]]], elici_t1[[eli_que_names[i]]], elici_t2[[eli_que_names[i]]]) < 2,
-# #                  0,
-# #                  1)
-#
-#           ifelse(sum(c(paste0("min",i),
-#                        paste0("max",i),
-#                        paste0("tertile1_",i),
-#                        paste0("tertile2_",i)) %in% names(input)) == 4,
-#                  ifelse(elici_minis[[eli_que_names[i]]] == input[[paste0("min",i)]] &
-#                           elici_maxis[[eli_que_names[i]]] == input[[paste0("max",i)]] &
-#                           elici_t1[[eli_que_names[i]]] == input[[paste0("tertile1_",i)]] &
-#                           elici_t2[[eli_que_names[i]]] == input[[paste0("tertile2_",i)]],
-#                         1,0),
-#                  0)
-#
-#         })
-#
-#       })
-#
-#     }
 
   } else {
 
@@ -866,8 +803,6 @@ function (input, output, session) {
               showModal(modalDialog (uiOutput ("no_chips"), size="l"))
 
               } else {
-
-                temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
 
                 # save answers
 
@@ -899,9 +834,8 @@ function (input, output, session) {
 
                 if(tot_eli_ques > 1 & i < tot_eli_ques){
 
-                  # if there are more questions to come, move onto the next tab
-                  updateTabsetPanel(session, "question_tabs",
-                                    selected = paste0("Question ",i+1))
+                  # if there are more questions to come, move onto the next question
+                  buttons$que_no <- i + 1
 
                 } else {
 
@@ -947,8 +881,6 @@ function (input, output, session) {
 
             } else {
 
-              temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
-
               # save answers
 
               temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
@@ -981,9 +913,8 @@ function (input, output, session) {
 
               if(tot_eli_ques > 1 & i < tot_eli_ques){
 
-                # if there are more questions to come, move onto the next tab
-                updateTabsetPanel(session, "question_tabs",
-                                  selected = paste0("Question ",i+1))
+                # if there are more questions to come, move onto the next question
+                buttons$que_no <- i + 1
 
               } else {
 
@@ -1027,8 +958,6 @@ function (input, output, session) {
 
             } else {
 
-              temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
-
               # save answers
 
               temp1 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
@@ -1060,9 +989,8 @@ function (input, output, session) {
 
               if(tot_eli_ques > 1 & i < tot_eli_ques){
 
-                # if there are more questions to come, move onto the next tab
-                updateTabsetPanel(session, "question_tabs",
-                                  selected = paste0("Question ",i+1))
+                # if there are more questions to come, move onto the next question
+                buttons$que_no <- i + 1
 
               } else {
 
@@ -1091,7 +1019,6 @@ if(save_method == "local"){
         content = function(con) {
 
           que_name <- eli_que_names[i]
-          temp1 <- buttons$que_no; buttons$que_no <- temp1 + 1
 
           if(elicitation_method == "chips and bins"){
 
@@ -1105,12 +1032,6 @@ if(save_method == "local"){
 
           } else if (elicitation_method == "quartiles") {
 
-            # elici_minis[[que_name]] <- input[[paste0("min",i)]]
-            # elici_maxis[[que_name]] <- input[[paste0("max",i)]]
-            # elici_q1[[que_name]] <- input[[paste0("quartile1_",i)]]
-            # elici_q2[[que_name]] <- input[[paste0("quartile2_",i)]]
-            # elici_q3[[que_name]] <- input[[paste0("quartile3_",i)]]
-
             temp2 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_q1[[que_name]], elici_q2[[que_name]], elici_q3[[que_name]])
             save[[paste0("next_que_", i)]] <- temp2
             save[[paste0("next_que_", i, "_colnames")]] <- c("expert_id",
@@ -1122,12 +1043,6 @@ if(save_method == "local"){
 
 
           } else {
-
-            # # save most recent inputs as reactive values
-            # elici_minis[[que_name]] <- input[[paste0("min",i)]]
-            # elici_maxis[[que_name]] <- input[[paste0("max",i)]]
-            # elici_t1[[que_name]] <- input[[paste0("tertile1_",i)]]
-            # elici_t2[[que_name]] <- input[[paste0("tertile2_",i)]]
 
             temp2 <- c(buttons$expert_id, elici_minis[[que_name]], elici_maxis[[que_name]], elici_t1[[que_name]], elici_t2[[que_name]])
             save[[paste0("next_que_", i)]] <- temp2
@@ -1164,7 +1079,19 @@ if(save_method == "local"){
           colnames(data) <- save[["all_answers_colnames"]]
           write.csv(data, con)
 
+          if(tot_eli_ques > 1 & i < tot_eli_ques){
+
+            # if there are more questions to come, move onto the next question
+            buttons$que_no <- i + 1
+
+          } else {
+
+            # if this is the last question, show a pop up message
+            showModal(modalDialog (uiOutput ("end_of_exercise"), size="l"))
+
           }
+
+        }
 
       )
 
@@ -1795,6 +1722,7 @@ if(save_method == "local"){
       } else {
 
         do.call(tabsetPanel, c(id="question_tabs",
+                               selected = paste0("Question ", buttons$que_no),
                                lapply(1:tot_eli_ques, function(i) {
 
                                  tabPanel(paste0("Question ",i),
@@ -1809,7 +1737,10 @@ if(save_method == "local"){
                                                    " and saved your answers in order to proceed.")
                                                    ))
                                               } else {
+                                                tagList(div(
+                                                  buttons$que_no,
                                                 uiOutput(paste0("eli_question_",i))
+                                                ))
                                               }
 
                                           )

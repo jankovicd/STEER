@@ -24,9 +24,9 @@ w\:* {behavior:url(#default#VML);}
   <o:Author>Dina Jankovic</o:Author>
   <o:LastAuthor>Dina Jankovic</o:LastAuthor>
   <o:Revision>2</o:Revision>
-  <o:TotalTime>12</o:TotalTime>
-  <o:Created>2022-09-23T15:12:00Z</o:Created>
-  <o:LastSaved>2022-09-23T15:12:00Z</o:LastSaved>
+  <o:TotalTime>16</o:TotalTime>
+  <o:Created>2023-12-12T14:19:00Z</o:Created>
+  <o:LastSaved>2023-12-12T14:19:00Z</o:LastSaved>
   <o:Pages>5</o:Pages>
   <o:Words>527</o:Words>
   <o:Characters>3004</o:Characters>
@@ -45,10 +45,10 @@ w\:* {behavior:url(#default#VML);}
 href="text_instructions_chips_and_bins_files/colorschememapping.xml">
 <!--[if gte mso 9]><xml>
  <w:WordDocument>
-  <w:View>Print</w:View>
-  <w:Zoom>0</w:Zoom>
   <w:HideSpellingErrors/>
   <w:HideGrammaticalErrors/>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
   <w:TrackMoves>false</w:TrackMoves>
   <w:TrackFormatting/>
   <w:PunctuationKerning/>
@@ -88,7 +88,7 @@ href="text_instructions_chips_and_bins_files/colorschememapping.xml">
 </xml><![endif]--><!--[if gte mso 9]><xml>
  <w:LatentStyles DefLockedState="false" DefUnhideWhenUsed="false"
   DefSemiHidden="false" DefQFormat="false" DefPriority="99"
-  LatentStyleCount="371">
+  LatentStyleCount="375">
   <w:LsdException Locked="false" Priority="0" QFormat="true" Name="Normal"/>
   <w:LsdException Locked="false" Priority="9" QFormat="true" Name="heading 1"/>
   <w:LsdException Locked="false" Priority="9" SemiHidden="true"
@@ -294,8 +294,6 @@ href="text_instructions_chips_and_bins_files/colorschememapping.xml">
   <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
    Name="HTML Variable"/>
   <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-   Name="Normal Table"/>
-  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
    Name="annotation subject"/>
   <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
    Name="No List"/>
@@ -382,13 +380,9 @@ href="text_instructions_chips_and_bins_files/colorschememapping.xml">
   <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
    Name="Table Subtle 1"/>
   <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-   Name="Table Subtle 2"/>
-  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
    Name="Table Web 1"/>
   <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
    Name="Table Web 2"/>
-  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
-   Name="Table Web 3"/>
   <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
    Name="Balloon Text"/>
   <w:LsdException Locked="false" Priority="39" Name="Table Grid"/>
@@ -653,6 +647,14 @@ href="text_instructions_chips_and_bins_files/colorschememapping.xml">
    Name="List Table 6 Colorful Accent 6"/>
   <w:LsdException Locked="false" Priority="52"
    Name="List Table 7 Colorful Accent 6"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Mention"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Smart Hyperlink"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Hashtag"/>
+  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"
+   Name="Unresolved Mention"/>
  </w:LatentStyles>
 </xml><![endif]-->
 <style>
@@ -661,10 +663,10 @@ href="text_instructions_chips_and_bins_files/colorschememapping.xml">
  @font-face
 	{font-family:"Cambria Math";
 	panose-1:2 4 5 3 5 4 6 3 2 4;
-	mso-font-charset:1;
+	mso-font-charset:0;
 	mso-generic-font-family:roman;
 	mso-font-pitch:variable;
-	mso-font-signature:0 0 0 0 0 0;}
+	mso-font-signature:3 0 0 0 1 0;}
 @font-face
 	{font-family:Calibri;
 	panose-1:2 15 5 2 2 2 4 3 2 4;
@@ -990,6 +992,9 @@ span.BalloonTextChar
 	mso-ascii-font-family:"Segoe UI";
 	mso-hansi-font-family:"Segoe UI";
 	mso-bidi-font-family:"Segoe UI";}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
 .MsoChpDefault
 	{mso-style-type:export-only;
 	mso-default-props:yes;
@@ -1060,8 +1065,8 @@ questions will we ask you?<o:p></o:p></b></p>
 
 <p class=MsoNormal>We will ask you to estimate <span style='color:black;
 mso-themecolor:text1'>some of our model inputs, such as 30-day mortality and
-the average hospital length of stay in specific patient populations</span>. We are
-interested in your uncertainty around these values. </p>
+the average hospital length of stay in specific patient populations</span>. We
+are interested in your uncertainty around these values. </p>
 
 <p class=MsoNormal><b style='mso-bidi-font-weight:normal'>What do we mean by
 uncertainty?<o:p></o:p></b></p>
@@ -1095,9 +1100,9 @@ is a 1% probability that the length of stay is less than that value.<o:p></o:p><
 highest plausible length of stay (maximum) - a value, such that you believe
 that there is a 1% probability that the length of stay is more than that value.<o:p></o:p></span></p>
 
-<p class=MsoNormal><span style='color:black;mso-themecolor:text1'>- So you
-believe that there is 98% probability between the lowest and the highest
-values.<o:p></o:p></span></p>
+<p class=MsoNormal><span style='color:black;mso-themecolor:text1'>- <span
+class=GramE>So</span> you believe that there is 98% probability between the
+lowest and the highest values.<o:p></o:p></span></p>
 
 <p class=MsoNormal><span style='color:black;mso-themecolor:text1'>Test your
 range by imagining that somebody gives a value that is outside your plausible
@@ -1158,24 +1163,24 @@ bar in the grid, the more confident you are.</p>
 same number of chips in each of the bins, so the height of red bars is the same
 for all possible values, as shown below.</p>
 
-<p class=MsoNormal><span style='mso-fareast-language:EN-GB;mso-no-proof:yes'><!--[if gte vml 1]><v:shape
- id="Picture_x0020_2" o:spid="_x0000_i1028" type="#_x0000_t75" style='width:356.25pt;
- height:294.75pt;visibility:visible;mso-wrap-style:square'>
+<p class=MsoNormal><span style='mso-no-proof:yes'><!--[if gte vml 1]><v:shape
+ id="Picture_x0020_6" o:spid="_x0000_i1028" type="#_x0000_t75" style='width:378pt;
+ height:312.75pt;visibility:visible;mso-wrap-style:square'>
  <v:imagedata src="text_instructions_chips_and_bins_files/image003.png"
   o:title=""/>
-</v:shape><![endif]--><![if !vml]><img width=475 height=393
-src="text_instructions_chips_and_bins_files/image004.jpg" v:shapes="Picture_x0020_2"><![endif]></span></p>
+</v:shape><![endif]--><![if !vml]><img width=504 height=417
+src="text_instructions_chips_and_bins_files/image003.png" v:shapes="Picture_x0020_6"><![endif]></span></p>
 
 <p class=MsoNormal>Similarly, if you are absolutely certain of the value, you
 place all chips in one bin, as shown below.</p>
 
-<p class=MsoNormal><span style='mso-fareast-language:EN-GB;mso-no-proof:yes'><!--[if gte vml 1]><v:shape
- id="Picture_x0020_3" o:spid="_x0000_i1027" type="#_x0000_t75" style='width:356.25pt;
- height:294pt;visibility:visible;mso-wrap-style:square'>
- <v:imagedata src="text_instructions_chips_and_bins_files/image005.png"
+<p class=MsoNormal><span style='mso-no-proof:yes'><!--[if gte vml 1]><v:shape
+ id="Picture_x0020_7" o:spid="_x0000_i1027" type="#_x0000_t75" style='width:378.75pt;
+ height:312.75pt;visibility:visible;mso-wrap-style:square'>
+ <v:imagedata src="text_instructions_chips_and_bins_files/image004.png"
   o:title=""/>
-</v:shape><![endif]--><![if !vml]><img width=475 height=392
-src="text_instructions_chips_and_bins_files/image006.jpg" v:shapes="Picture_x0020_3"><![endif]></span></p>
+</v:shape><![endif]--><![if !vml]><img width=505 height=417
+src="text_instructions_chips_and_bins_files/image004.png" v:shapes="Picture_x0020_7"><![endif]></span></p>
 
 <p class=MsoNormal>You will need to be mindful about what your response says
 about the degree of certainty in your belief. For example, twice as many
@@ -1187,10 +1192,10 @@ to be the answer.</p>
 <p class=MsoNormal><span style='mso-fareast-language:EN-GB;mso-no-proof:yes'><!--[if gte vml 1]><v:shape
  id="Picture_x0020_4" o:spid="_x0000_i1026" type="#_x0000_t75" style='width:357pt;
  height:294.75pt;visibility:visible;mso-wrap-style:square'>
- <v:imagedata src="text_instructions_chips_and_bins_files/image007.png"
+ <v:imagedata src="text_instructions_chips_and_bins_files/image005.png"
   o:title=""/>
 </v:shape><![endif]--><![if !vml]><img width=476 height=393
-src="text_instructions_chips_and_bins_files/image008.jpg" v:shapes="Picture_x0020_4"><![endif]></span></p>
+src="text_instructions_chips_and_bins_files/image006.jpg" v:shapes="Picture_x0020_4"><![endif]></span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -1201,10 +1206,10 @@ breaks in the bins, like in the grid below.</p>
 <p class=MsoNormal><span style='mso-fareast-language:EN-GB;mso-no-proof:yes'><!--[if gte vml 1]><v:shape
  id="Picture_x0020_5" o:spid="_x0000_i1025" type="#_x0000_t75" style='width:357pt;
  height:294.75pt;visibility:visible;mso-wrap-style:square'>
- <v:imagedata src="text_instructions_chips_and_bins_files/image009.png"
+ <v:imagedata src="text_instructions_chips_and_bins_files/image007.png"
   o:title=""/>
 </v:shape><![endif]--><![if !vml]><img width=476 height=393
-src="text_instructions_chips_and_bins_files/image010.jpg" v:shapes="Picture_x0020_5"><![endif]></span></p>
+src="text_instructions_chips_and_bins_files/image008.jpg" v:shapes="Picture_x0020_5"><![endif]></span></p>
 
 <p class=MsoNormal>You can practice with the grid below.</p>
 

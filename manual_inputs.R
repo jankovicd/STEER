@@ -13,7 +13,7 @@ include_consent <- FALSE
 # the form can be edited by editing "text_home.htm" file in the "www" folder of the app.
 
 #c)
-include_about_you <- TRUE
+include_about_you <- FALSE
 # to include questions about experts, set to TRUE, otherwise FALSE
 n_about_you <- 2
 # the number of questions about experts in the "about_you.R" file.
@@ -30,8 +30,7 @@ elicitation_method <- "chips and bins"
 # The length of "quantity" determines the number of questions in the app
 quantity <- c("proportion",
               "time required for the drug to start working",
-              "reduction in HbA1C",
-              "relative risk")
+              "reduction in HbA1C")
 # Feeds into:
 # 1. "I believe it is very unlikely that
 # - the >>quantity<< is greater than x
@@ -40,15 +39,15 @@ quantity <- c("proportion",
 
 #f)
 # units for each quantity being elicited. Use "" if no unit (e.g. relative risk).
-units <- c("percent", "minutes", "HbA1C units", "")
+units <- c("percent", "minutes", "HbA1C units")
 # length should be the same as "quantity" above
 # Feeds into graphs and feedback text:
 # "There is a x% probability that the >>quantity<< is between y and z >>units<<."
 
 #g)
 # Lower and upper limit of each quantity being elicited. Use NA if no limit (e.g. upper limit of relative risk).
-quant_limit_lower <- c(0, 0, 0, NA)
-quant_limit_upper <- c(100, NA, 50, NA)
+quant_limit_lower <- c(0, 0, 0)
+quant_limit_upper <- c(100, NA, 50)
 #length of each vector should be the same as "quantity" and "units" above
 
 #h)
