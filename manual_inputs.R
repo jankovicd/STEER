@@ -64,36 +64,36 @@ conditional_release <- FALSE
 # usually set to FALSE while editing the app, then TRUE in the final, published version.
 
 
-#j)
-save_method <- "local"
-# set to "local" to save files on expert's computer and email the answers over or
-# "dropbox" to use dropbox
-
-# if save_method <- "dropbox" name of dropbox folder where elicitation responses are saved
-folder_name<-"elicitation_responses"
-# note that only one app can be used per folder
-
-# If using Dropbox to save answers, carry out the following 8 steps:
-# 1. On first running create a Dropbox folder where the answers will
-# be saved ("folder_name" above), and open the Dropbox folder on your Browser
-# 2. Install and load the rdrop2 package by running the following line of code:
-# install.packages("rdrop2"); library(rdrop2)
-# 3. Create the app name in the following line of code:
-# app_name <- "r_tool_tertiles"
-# 4. Run the following code:
-# token <- drop_auth()
-# 5. When prompted, allow R access to the folder on the Dropbox website
-# 6. Run the following code:
-# dropbox_endpoint <- httr::oauth_endpoint(authorize = "https://www.dropbox.com/oauth2/authorize",
-#                                          access = "https://api.dropbox.com/oauth2/token")
+# #j)
+# save_method <- "local"
+# # set to "local" to save files on expert's computer and email the answers over or
+# # "dropbox" to use dropbox
 #
-# dropbox_app <- httr::oauth_app(appname=app_name, key = "mmhfsybffdom42w",
-#                                secret = "l8zeqqqgm1ne5z0")
+# # if save_method <- "dropbox" name of dropbox folder where elicitation responses are saved
+# folder_name<-"elicitation_responses"
+# # note that only one app can be used per folder
 #
-# token <- httr::oauth2.0_token(endpoint=dropbox_endpoint, app=dropbox_app,cache = TRUE,
-#                                       query_authorize_extra = list(token_access_type= "offline"))
-# 7. When prompted, allow R access to the folder on the Dropbox website
-# 8. Save the token by running the following code (make sure the token is saved to the app folder):
-# saveRDS(token, "droptoken.rds")
+# # If using Dropbox to save answers, carry out the following 8 steps:
+# # 1. On first running create a Dropbox folder where the answers will
+# # be saved ("folder_name" above), and open the Dropbox folder on your Browser
+# # 2. Install and load the rdrop2 package by running the following line of code:
+# # install.packages("rdrop2"); library(rdrop2)
+# # 3. Create the app name in the following line of code:
+# # app_name <- "r_tool_tertiles"
+# # 4. Run the following code:
+# # token <- drop_auth()
+# # 5. When prompted, allow R access to the folder on the Dropbox website
+# # 6. Run the following code:
+# # dropbox_endpoint <- httr::oauth_endpoint(authorize = "https://www.dropbox.com/oauth2/authorize",
+# #                                          access = "https://api.dropbox.com/oauth2/token")
+# #
+# # dropbox_app <- httr::oauth_app(appname=app_name, key = "mmhfsybffdom42w",
+# #                                secret = "l8zeqqqgm1ne5z0")
+# #
+# # token <- httr::oauth2.0_token(endpoint=dropbox_endpoint, app=dropbox_app,cache = TRUE,
+# #                                       query_authorize_extra = list(token_access_type= "offline"))
+# # 7. When prompted, allow R access to the folder on the Dropbox website
+# # 8. Save the token by running the following code (make sure the token is saved to the app folder):
+# # saveRDS(token, "droptoken.rds")
 
 

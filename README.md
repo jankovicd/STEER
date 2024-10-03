@@ -12,7 +12,7 @@ To use the materials, please cite *Jankovic D, Soares M, Bojke L, Horscroft J, L
 
 **Easy to disseminate**
 
-You can deploy your bespoke app to a webpage and disseminate them simply by sending the link and a unique ID to each expert. Experts’ answers will be saved on their device in a single file that can be sent back to you.
+You can deploy your bespoke app to a webpage and disseminate them simply by sending the link and a unique ID to each expert. Experts’ answers can be saved locally (on their computer) and sent back to you, or remotely on a Dropbox folder of your choosing. 
 
 **Easy to analyse**
 
@@ -116,6 +116,11 @@ Use “eli_que_text” vector where each element corresponds to one elicitation 
 **i)	Whether to lock the app content so that experts must click through each tab to complete the exercise, preventing skips between tabs**
 Set “conditional_release” to TRUE to force experts to complete each section or FALSE to make all tabs visible at all times. “conditional_release” is usually set to FALSE while editing the app, then TRUE in the final, published version.
 
+**j)	Method for saving experts’ answers**
+Set “save_method” to “local” for experts to save answers on their computer and send the responses back to you or “dropbox” to save answers on a Dropbox folder of your choosing.
+
+If j) is set to “dropbox”, you must define the name of the Dropbox folder where elicitation exercises will be saved in “folder_name”. Only one folder name can be used per app. For further details on how to set up the Dropbox folder, see manual_inputs.R file.
+
 
 ### How to edit “About you” questions
 
@@ -151,7 +156,7 @@ Once all relevant files are aggregated in the relevant folder, the code fits dis
 
 To run the analysis: 
 * Save all elicitation responses in one folder (“analysis_files/experts_responses” in the project folder).
-* Name all files with experts' responses in the following format: expertID_doanload_all.csv (where expertID is the expert's unique ID)
+* Make sure that files with experts' responses are be named in the following format: expertID_doanload_all.csv (where expertID is the expert's unique ID)
 * Open the analysis_code.R file from RStudio.
 * Select which distributions to fit in each elicitation question by setting the “dist_per_question” object.
 * Run the code

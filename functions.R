@@ -395,7 +395,7 @@ f_cond_tertiles <- function(elici_minis, elici_maxis, elici_t1, elici_t2) {
 
 }
 
-####### saving functions #######
+####### saving functions (no longer used as Shiny no longer supports dropbox) #######
 
 if(save_method == "dropbox") {
 

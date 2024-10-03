@@ -1,4 +1,4 @@
-library(rdrop2)
+# library(rdrop2)
 
 source("manual_inputs.R", local = TRUE)
 source("functions.R", local = TRUE)
