@@ -12,7 +12,7 @@ To use the materials, please cite *Jankovic D, Soares M, Bojke L, Horscroft J, L
 
 **Easy to disseminate**
 
-You can deploy your bespoke app to a webpage and disseminate them simply by sending the link and a unique ID to each expert. Experts’ answers can be saved locally (on their computer) and sent back to you, or remotely on a Dropbox folder of your choosing. 
+You can deploy your bespoke app to a webpage and disseminate them simply by sending the link and a unique ID to each expert. Experts’ answers will be saved on their device in a single file that can be sent back to you. 
 
 **Easy to analyse**
 
