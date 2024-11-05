@@ -12,6 +12,8 @@ dist_per_question <- c("Beta", "Log.normal", "Normal", "Normal")
 source("manual_inputs.R")
 source("analysis_files/analysis_functions.R")
 
+save_method <- "local"
+
 # files with experts' responses must be named in the following format:
 # expertID_doanload_all.csv
 folder_with_responses <- "analysis_files/experts_responses" # name of folder where experts' answers are saved (should be in the working directory)

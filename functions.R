@@ -15,6 +15,8 @@ if(!exists("dummy_app")){ # if dummy_app doesn't exist (e.g. when deploying the 
 
 }
 
+save_method <- "local"
+
 ########## functions ##########
 
 ###### elicitation ######
