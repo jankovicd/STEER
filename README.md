@@ -49,7 +49,7 @@ For details, see How to customise your app.
 * Open a free account with shinyapps.io
 * Click on the “Publish application” button in RStudio (![](www/deploy_button.png) icon in the top right corner of RStudio) and follow the onscreen instructions.
 
-For other methods to disseminate your app, visit the [share your appp Shiny tutorial](https://shiny.rstudio.com/tutorial/written-tutorial/lesson7/).
+For other methods to disseminate your app, visit the [share your app Shiny tutorial](https://shiny.rstudio.com/tutorial/written-tutorial/lesson7/).
 
 ## How to customise your app
 
